@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Developer Guide | NeighbourHood</title>
+    <link rel="stylesheet" href="./static/landing.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .guide-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+        .guide-section {
+            background: white;
+            border: 1px solid var(--border-light);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .guide-section h2 {
+            color: var(--purple-700);
+            margin-bottom: 1rem;
+            font-size: 1.75rem;
+        }
+        .guide-section h3 {
+            color: var(--text-primary);
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            font-size: 1.25rem;
+        }
+        .guide-section pre {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        .guide-section code {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: var(--purple-700);
+        }
+        .guide-section ul {
+            margin-left: 2rem;
+            line-height: 1.8;
+        }
+        .guide-section li {
+            margin-bottom: 0.5rem;
+        }
+        .breadcrumb {
+            margin-bottom: 2rem;
+            color: var(--text-secondary);
+        }
+        .breadcrumb a {
+            color: var(--purple-700);
+            text-decoration: none;
+        }
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        .api-endpoint {
+            background: linear-gradient(135deg, var(--purple-50), var(--purple-100));
+            border-left: 4px solid var(--purple-600);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0.5rem;
+        }
+        .api-endpoint .method {
+            display: inline-block;
+            background: var(--purple-700);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-right: 0.5rem;
+        }
+        .back-home {
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <div class="logo">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <rect width="32" height="32" rx="8" fill="url(#gradient)"/>
+                        <path d="M16 8L8 16L16 24L24 16L16 8Z" fill="white" opacity="0.9"/>
+                        <defs>
+                            <linearGradient id="gradient" x1="0" y1="0" x2="32" y2="32">
+                                <stop offset="0%" stop-color="#7C3AED"/>
+                                <stop offset="100%" stop-color="#A855F7"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <span>NeighbourHood</span>
+                </div>
+                <div class="nav-links">
+                    <a href="./index.html">Home</a>
+                    <a href="./index.html#features">Features</a>
+                    <a href="./index.html#integrations">Integrations</a>
+                    <a href="https://github.com/SiddhantSShende/NeighbourHood" target="_blank">GitHub</a>
+                    <a href="./dashboard.html" class="btn-primary">Get Started</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="guide-container">
+        <div class="breadcrumb">
+            <a href="./index.html">Home</a> / Developer Guide
+        </div>
+
+        <h1 style="font-size: 3rem; margin-bottom: 1rem; color: var(--text-primary);">
+            Developer <span class="gradient-text">Guide</span>
+        </h1>
+        <p style="font-size: 1.25rem; color: var(--text-secondary); margin-bottom: 3rem;">
+            Everything you need to integrate NeighbourHood into your application
+        </p>
+
+        <div class="guide-section">
+            <h2>🚀 Quick Start</h2>
+            <p>Get started with NeighbourHood in minutes. Data is stored locally on your machine for privacy and security.</p>
+            
+            <h3>Step 1: Installation</h3>
+            <pre><code>npm install @neighbourhood/sdk
+# or
+yarn add @neighbourhood/sdk</code></pre>
+
+            <h3>Step 2: Initialize the SDK</h3>
+            <pre><code>import { NeighbourHood } from '@neighbourhood/sdk';
+
+const nh = new NeighbourHood({
+  apiKey: process.env.NH_API_KEY,
+  storage: 'local' // Data stored in browser localStorage
+});</code></pre>
+        </div>
+
+        <div class="guide-section">
+            <h2>🔐 Authentication</h2>
+            <p>NeighbourHood uses OAuth 2.0 for secure authentication. All tokens are stored locally on your machine.</p>
+            
+            <div class="api-endpoint">
+                <span class="method">POST</span>
+                <code>/api/integration/authurl</code>
+            </div>
+            
+            <pre><code>{
+  "provider": "slack",
+  "state": "random-state-string"
+}</code></pre>
+
+            <p><strong>Response:</strong></p>
+            <pre><code>{
+  "auth_url": "https://slack.com/oauth/v2/authorize?...",
+  "state": "random-state-string"
+}</code></pre>
+        </div>
+
+        <div class="guide-section">
+            <h2>📡 Making API Calls</h2>
+            
+            <h3>Connect to a Provider</h3>
+            <pre><code>// Connect to Slack
+const slack = await nh.connect('slack');
+
+// Send a message
+await slack.sendMessage({
+  channel: '#general',
+  text: 'Hello from NeighbourHood! 🎉'
+});</code></pre>
+
+            <h3>Execute Custom Actions</h3>
+            <div class="api-endpoint">
+                <span class="method">POST</span>
+                <code>/api/integration/execute</code>
+            </div>
+            
+            <pre><code>{
+  "provider": "gmail",
+  "token": {
+    "access_token": "ya29.xxxx",
+    "token_type": "Bearer"
+  },
+  "action": "send_email",
+  "payload": {
+    "to": "user@example.com",
+    "subject": "Hello",
+    "body": "This is a test email"
+  }
+}</code></pre>
+        </div>
+
+        <div class="guide-section">
+            <h2>🔄 Workflows</h2>
+            <p>Orchestrate multi-step workflows across different providers.</p>
+            
+            <div class="api-endpoint">
+                <span class="method">POST</span>
+                <code>/api/workflow/execute</code>
+            </div>
+            
+            <pre><code>{
+  "workflow": {
+    "name": "Email to Slack Notification",
+    "steps": [
+      {
+        "provider": "gmail",
+        "action": "send_email",
+        "payload": {
+          "to": "user@example.com",
+          "subject": "Task Complete",
+          "body": "Your task has been completed"
+        }
+      },
+      {
+        "provider": "slack",
+        "action": "send_message",
+        "payload": {
+          "channel": "#notifications",
+          "text": "Email sent successfully! ✅"
+        }
+      }
+    ]
+  },
+  "tokens": {
+    "gmail": { "access_token": "..." },
+    "slack": { "access_token": "..." }
+  }
+}</code></pre>
+        </div>
+
+        <div class="guide-section">
+            <h2>💾 Local Data Storage</h2>
+            <p>NeighbourHood stores all your integration data locally on your machine using browser localStorage. This ensures:</p>
+            <ul>
+                <li><strong>Privacy</strong>: Your tokens and data never leave your device</li>
+                <li><strong>Security</strong>: No server-side storage of sensitive credentials</li>
+                <li><strong>Performance</strong>: Instant access to cached data</li>
+                <li><strong>Offline Support</strong>: Work even without internet connection</li>
+            </ul>
+
+            <h3>Managing Stored Data</h3>
+            <pre><code>// Get all stored integrations
+const integrations = nh.getIntegrations();
+
+// Clear specific integration data
+nh.clearIntegration('slack');
+
+// Clear all data
+nh.clearAll();</code></pre>
+        </div>
+
+        <div class="guide-section">
+            <h2>🌐 Available Integrations</h2>
+            <p>Currently supported integrations:</p>
+            <ul>
+                <li><strong>Communication:</strong> Slack, Discord, Microsoft Teams</li>
+                <li><strong>Email:</strong> Gmail, Outlook, SendGrid, Mailchimp</li>
+                <li><strong>Project Management:</strong> Jira, Asana, Trello, Monday.com</li>
+                <li><strong>Developer Tools:</strong> GitHub, GitLab, Bitbucket</li>
+                <li><strong>Productivity:</strong> Notion, Google Calendar, Zoom</li>
+                <li><strong>CRM:</strong> Salesforce, HubSpot, Pipedrive</li>
+                <li><strong>Payments:</strong> Stripe, PayPal, Square</li>
+                <li><strong>Storage:</strong> Dropbox, Google Drive, Box</li>
+            </ul>
+        </div>
+
+        <div class="guide-section">
+            <h2>📖 Additional Resources</h2>
+            <ul>
+                <li><a href="https://github.com/SiddhantSShende/NeighbourHood">GitHub Repository</a> - View source code and contribute</li>
+                <li><a href="./dashboard.html">Dashboard</a> - Manage your integrations</li>
+                <li><a href="https://github.com/SiddhantSShende/NeighbourHood/blob/main/API_DOCUMENTATION.md">API Reference</a> - Complete API documentation</li>
+                <li><a href="https://github.com/SiddhantSShende/NeighbourHood/blob/main/CONTRIBUTING.md">Contributing Guide</a> - Help improve NeighbourHood</li>
+            </ul>
+        </div>
+
+        <div style="text-align: center; padding: 3rem 0;">
+            <h2 style="margin-bottom: 1rem;">Ready to get started?</h2>
+            <a href="./dashboard.html" class="btn-primary btn-large">Launch Dashboard</a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Product</h4>
+                    <a href="./index.html#features">Features</a>
+                    <a href="./index.html#integrations">Integrations</a>
+                    <a href="./developer-guide.html">Developer Guide</a>
+                    <a href="./dashboard.html">Dashboard</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <a href="https://github.com/SiddhantSShende/NeighbourHood">GitHub</a>
+                    <a href="https://github.com/SiddhantSShende/NeighbourHood/blob/main/API_DOCUMENTATION.md">API Reference</a>
+                    <a href="https://github.com/SiddhantSShende/NeighbourHood/blob/main/CONTRIBUTING.md">Contributing</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <a href="https://github.com/SiddhantSShende">About</a>
+                    <a href="https://github.com/SiddhantSShende/NeighbourHood">Contact</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <a href="https://github.com/SiddhantSShende/NeighbourHood">Privacy Policy</a>
+                    <a href="https://github.com/SiddhantSShende/NeighbourHood">Terms of Service</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 NeighbourHood. Open source and built with ❤️ by developers, for developers.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

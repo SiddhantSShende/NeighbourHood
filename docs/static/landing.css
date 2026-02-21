@@ -112,7 +112,7 @@ body {
 /* Buttons */
 .btn-primary {
     background: linear-gradient(135deg, var(--purple-600) 0%, var(--purple-700) 100%);
-    color: white;
+    color: #FFFFFF !important;
     padding: 0.75rem 1.5rem;
     border-radius: 0.5rem;
     text-decoration: none;
@@ -129,11 +129,12 @@ body {
 .btn-primary:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(124, 58, 237, 0.4);
+    color: #FFFFFF !important;
 }
 
 .btn-secondary {
     background-color: var(--bg-primary);
-    color: var(--text-primary);
+    color: var(--text-primary) !important;
     padding: 0.75rem 1.5rem;
     border-radius: 0.5rem;
     text-decoration: none;
@@ -149,6 +150,7 @@ body {
 .btn-secondary:hover {
     background-color: var(--bg-secondary);
     border-color: var(--purple-500);
+    color: var(--purple-700) !important;
     transform: translateY(-1px);
 }
 
@@ -159,7 +161,7 @@ body {
 
 /* Hero Section */
 .hero {
-    padding: 8rem 0 6rem;
+    padding: 3rem 0 4rem;
     background: linear-gradient(180deg, var(--bg-primary) 0%, var(--purple-50) 100%);
     position: relative;
     overflow: hidden;
@@ -379,27 +381,54 @@ body {
     background: linear-gradient(180deg, var(--bg-primary) 0%, var(--purple-50) 100%);
 }
 
-.integrations-logos {
+.integrations-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 1.5rem;
+    margin-top: 3rem;
+}
+
+.integration-card {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-light);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.integration-card:hover {
+    border-color: var(--purple-500);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.integration-icon {
+    font-size: 2.5rem;
+}
+
+.integration-card span:last-child {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.integration-card:hover span:last-child {
+    color: var(--purple-700);
+}
+
+/* Legacy support - remove old classes */
+.integrations-logos {
+    display: none;
 }
 
 .integration-logo {
-    background-color: var(--bg-primary);
-    border: 1px solid var(--border-light);
-    border-radius: 0.75rem;
-    padding: 2rem;
-    text-align: center;
-    font-weight: 600;
-    color: var(--text-secondary);
-    transition: all 0.2s;
-}
-
-.integration-logo:hover {
-    border-color: var(--purple-500);
-    color: var(--purple-700);
-    transform: translateY(-2px);
+    display: none;
 }
 
 /* How It Works */
