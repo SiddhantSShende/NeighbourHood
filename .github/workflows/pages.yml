@@ -24,6 +24,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      
+      - name: Validate Deployment Files
+        run: |
+          chmod +x scripts/validate-deployment.sh
+          bash scripts/validate-deployment.sh
         
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -36,3 +41,9 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+      
+      - name: Verify Deployment
+        if: success()
+        run: |
+          chmod +x scripts/verify-deployment.sh
+          bash scripts/verify-deployment.sh "${{ steps.deployment.outputs.page_url }}"
