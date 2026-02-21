@@ -465,7 +465,7 @@ The frontend is deployed to GitHub Pages using GitHub Actions for automated, pro
 ### Prerequisites
 - GitHub repository with Pages enabled
 - Write access to repository settings
-- All frontend files in `docs/` folder
+- All frontend files in `webpages/` folder
 
 ### Configuration Steps
 
@@ -528,7 +528,7 @@ bash scripts/verify-deployment.sh
 
 ### Frontend Structure
 ```
-docs/
+webpages/
 ├── index.html              # Landing page (16 KB)
 ├── dashboard.html          # Developer dashboard (11 KB)
 ├── developer-guide.html    # API documentation (12 KB)

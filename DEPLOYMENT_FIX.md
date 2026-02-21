@@ -44,7 +44,7 @@ Our deployment includes:
 ### Deployment (GitHub Actions)
 - ✅ Automatically triggers on push to `main`
 - ✅ Runs validation before deploy
-- ✅ Deploys `docs/` folder to GitHub Pages
+- ✅ Deploys `webpages/` folder to GitHub Pages
 - ✅ Verifies deployment success
 
 ### Post-Deployment Verification (`verify-deployment.sh`)
@@ -63,7 +63,7 @@ $ bash scripts/validate-deployment.sh
 ```
 
 ### Files Status
-- ✅ Frontend files in `docs/` folder
+- ✅ Frontend files in `webpages/` folder
 - ✅ `.nojekyll` file present
 - ✅ GitHub Actions workflow configured
 - ✅ Validation scripts executable
@@ -77,7 +77,7 @@ $ bash scripts/validate-deployment.sh
 ### If 404 persists after configuration:
 1. Check GitHub Actions status: https://github.com/SiddhantSShende/NeighbourHood/actions
 2. Look for errors in the workflow run
-3. Ensure all files in `docs/` folder are committed and pushed
+3. Ensure all files in `webpages/` folder are committed and pushed
 
 ### If deployment fails:
 1. Check workflow logs for validation errors
@@ -104,7 +104,7 @@ If automatic trigger doesn't work:
 ## 🛠️ Technical Details
 
 ### Frontend Location
-All frontend files in `docs/` folder:
+All frontend files in `webpages/` folder:
 - `index.html` (16 KB) - Landing page
 - `dashboard.html` (11 KB) - Developer dashboard
 - `developer-guide.html` (12 KB) - Documentation

@@ -28,7 +28,7 @@ bash scripts/verify-deployment.sh
 
 ✅ Professional deployment scripts created  
 ✅ GitHub Actions workflow configured  
-✅ Frontend files in `docs/` folder  
+✅ Frontend files in `webpages/` folder  
 ✅ Validation & verification automated  
 ✅ All code committed & pushed  
 ✅ Documentation complete  

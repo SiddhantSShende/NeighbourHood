@@ -15,14 +15,14 @@ RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-echo "Ì¥ç Post-Deployment Verification for: $SITE_URL"
+echo "Post-Deployment Verification for: $SITE_URL"
 
 verify_url() {
     local url=$1
     local name=$2
     local retry=0
     
-    echo "Ìºê Checking: $name ($url)"
+    echo "Checking: $name ($url)"
     
     while [ $retry -lt $MAX_RETRIES ]; do
         http_code=$(curl -s -o /dev/null -w "%{http_code}" -L "$url" --max-time 15 || echo "000")
@@ -48,7 +48,7 @@ check_content() {
     local expected_text=$2
     local name=$3
     
-    echo "Ì≥Ñ Verifying content: $name"
+    echo "Verifying content: $name"
     
     content=$(curl -s -L "$url" --max-time 15 || echo "")
     
@@ -63,7 +63,7 @@ check_content() {
 
 # Main verification
 echo "========================================"
-echo "ÌæØ Phase 1: URL Accessibility"
+echo "Phase 1: URL Accessibility"
 echo "========================================"
 
 verify_url "$SITE_URL" "Landing Page" || exit 1
@@ -72,7 +72,7 @@ verify_url "${SITE_URL}developer-guide.html" "Developer Guide" || exit 1
 
 echo ""
 echo "========================================"
-echo "ÌæØ Phase 2: Content Verification"
+echo "Phase 2: Content Verification"
 echo "========================================"
 
 check_content "$SITE_URL" "NeighbourHood" "Landing Page Title" || exit 1
@@ -81,7 +81,7 @@ check_content "${SITE_URL}developer-guide.html" "Developer Guide" "Developer Gui
 
 echo ""
 echo "========================================"
-echo "ÌæØ Phase 3: Asset Verification"
+echo "Phase 3: Asset Verification"
 echo "========================================"
 
 verify_url "${SITE_URL}static/landing.css" "Landing CSS" || exit 1
@@ -90,9 +90,9 @@ verify_url "${SITE_URL}static/dashboard.js" "Dashboard JS" || exit 1
 
 echo ""
 echo "========================================"
-echo -e "${GREEN}‚úÖ All post-deployment verifications passed!${NC}"
-echo "Ìæâ Deployment successful and verified!"
-echo "Ìºê Site: $SITE_URL"
+echo -e "${GREEN}All post-deployment verifications passed!${NC}"
+echo "Deployment successful and verified!"
+echo "Site: $SITE_URL"
 echo "========================================"
 
 exit 0

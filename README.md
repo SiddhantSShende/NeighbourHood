@@ -48,7 +48,7 @@ NeighbourHood/
 │   └── integration/               # Integration service
 ├── proto/                         # Protocol Buffers definitions
 ├── configs/                       # Service configurations
-├── docs/                          # GitHub Pages frontend
+├── webpages/                          # GitHub Pages frontend
 │   ├── index.html                 # Landing page
 │   ├── dashboard.html             # Developer dashboard
 │   └── static/                    # CSS & JS assets
