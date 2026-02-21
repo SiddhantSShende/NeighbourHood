@@ -2,6 +2,8 @@
 
 A production-grade third-party integration platform that enables SaaS/PaaS providers to offer their services across multiple platforms with workflow orchestration capabilities.
 
+🌐 **[Live Demo](https://siddhantssshende.github.io/NeighbourHood/)** | 📖 **[API Docs](API_DOCUMENTATION.md)** | 🚀 **[Quick Start](QUICKSTART.md)**
+
 ## 🚀 Features
 
 - **Unified Integration Framework**: Single interface for all third-party integrations (Slack, Gmail, Jira, etc.)
@@ -41,15 +43,18 @@ NeighbourHood/
 │   │   └── schema.sql             # Database schema
 │   └── workflow/
 │       └── engine.go              # Workflow orchestration
-├── web/
-│   ├── static/
-│   │   ├── app.js                 # Frontend JavaScript
-│   │   └── styles.css             # Styles
-│   └── templates/
-│       └── index.html             # Developer portal UI
-├── docker-compose.yml             # Docker setup
-├── go.mod                         # Go module dependencies
-└── README.md                      # This file
+├── services/                      # Microservices
+│   ├── auth/                      # Authentication service
+│   └── integration/               # Integration service
+├── proto/                         # Protocol Buffers definitions
+├── configs/                       # Service configurations
+├── docs/                          # GitHub Pages frontend
+│   ├── index.html                 # Landing page
+│   ├── dashboard.html             # Developer dashboard
+│   └── static/                    # CSS & JS assets
+├── docker-compose.yml             # Docker orchestration
+├── Makefile                       # Build automation
+└── go.mod                         # Go dependencies
 ```
 
 ## 🏗️ Architecture
@@ -283,5 +288,9 @@ OR SEND PULL REQUEST
 
 ## 📧 Contact
 
-[siddhant.shende@consultrnr.com]
-# NeighbourHood
+**Email**: siddhant.shende@consultrnr.com  
+**GitHub**: [@SiddhantSShende](https://github.com/SiddhantSShende)
+
+---
+
+**Built with ❤️ for developers, by developers**
