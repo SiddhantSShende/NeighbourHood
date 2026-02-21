@@ -1,0 +1,384 @@
+# API Gateway Configuration
+
+server:
+  port: ${HTTP_PORT:8080}
+  host: ${HTTP_HOST:0.0.0.0}
+  read_timeout: 30s
+  write_timeout: 30s
+  idle_timeout: 120s
+  shutdown_timeout: 30s
+  
+  tls:
+    enabled: ${TLS_ENABLED:false}
+    cert_file: ${TLS_CERT_FILE:}
+    key_file: ${TLS_KEY_FILE:}
+
+cors:
+  enabled: true
+  allowed_origins:
+    - ${ALLOWED_ORIGIN:http://localhost:3000}
+  allowed_methods:
+    - GET
+    - POST
+    - PUT
+    - PATCH
+    - DELETE
+    - OPTIONS
+  allowed_headers:
+    - Authorization
+    - Content-Type
+    - X-Request-ID
+    - X-User-Agent
+  expose_headers:
+    - X-Request-ID
+    - X-RateLimit-Limit
+    - X-RateLimit-Remaining
+    - X-RateLimit-Reset
+  allow_credentials: true
+  max_age: 3600
+
+authentication:
+  jwt:
+    secret: ${JWT_SECRET:}
+    public_key_file: ${JWT_PUBLIC_KEY_FILE:}
+    issuer: neighbourhood-platform
+    audience: neighbourhood-api
+  
+  excluded_paths:
+    - /health
+    - /metrics
+    - /api/v1/auth/register
+    - /api/v1/auth/login
+    - /api/v1/auth/oauth/*
+
+rate_limiting:
+  enabled: true
+  redis_enabled: true
+  
+  global:
+    requests_per_minute: 1000
+    requests_per_hour: 50000
+  
+  per_user:
+    requests_per_minute: 100
+    requests_per_hour: 5000
+  
+  per_ip:
+    requests_per_minute: 60
+    requests_per_hour: 3000
+  
+  endpoints:
+    - path: /api/v1/auth/*
+      requests_per_minute: 10
+      requests_per_hour: 100
+    
+    - path: /api/v1/workflows/*/execute
+      requests_per_minute: 20
+      requests_per_hour: 500
+    
+    - path: /api/v1/integrations/*/actions
+      requests_per_minute: 30
+      requests_per_hour: 1000
+
+services:
+  auth:
+    address: ${AUTH_SERVICE_ADDR:localhost:50051}
+    timeout: 10s
+    retry_attempts: 3
+    circuit_breaker:
+      max_requests: 100
+      interval: 10s
+      timeout: 60s
+  
+  integration:
+    address: ${INTEGRATION_SERVICE_ADDR:localhost:50052}
+    timeout: 60s
+    retry_attempts: 3
+    circuit_breaker:
+      max_requests: 100
+      interval: 10s
+      timeout: 60s
+  
+  workflow:
+    address: ${WORKFLOW_SERVICE_ADDR:localhost:50053}
+    timeout: 120s
+    retry_attempts: 2
+    circuit_breaker:
+      max_requests: 50
+      interval: 10s
+      timeout: 60s
+  
+  consent:
+    address: ${CONSENT_SERVICE_ADDR:localhost:50054}
+    timeout: 10s
+    retry_attempts: 3
+    circuit_breaker:
+      max_requests: 100
+      interval: 10s
+      timeout: 60s
+  
+  notification:
+    address: ${NOTIFICATION_SERVICE_ADDR:localhost:50055}
+    timeout: 30s
+    retry_attempts: 2
+    circuit_breaker:
+      max_requests: 100
+      interval: 10s
+      timeout: 60s
+
+routes:
+  # Authentication endpoints
+  - path: /api/v1/auth/register
+    method: POST
+    service: auth
+    rpc: Register
+    public: true
+  
+  - path: /api/v1/auth/login
+    method: POST
+    service: auth
+    rpc: Login
+    public: true
+  
+  - path: /api/v1/auth/oauth/:provider/url
+    method: GET
+    service: auth
+    rpc: InitiateOAuth
+    public: true
+  
+  - path: /api/v1/auth/oauth/:provider/callback
+    method: GET
+    service: auth
+    rpc: CompleteOAuth
+    public: true
+  
+  - path: /api/v1/auth/token/validate
+    method: POST
+    service: auth
+    rpc: ValidateToken
+  
+  - path: /api/v1/auth/token/refresh
+    method: POST
+    service: auth
+    rpc: RefreshToken
+  
+  - path: /api/v1/auth/profile
+    method: GET
+    service: auth
+    rpc: GetUserProfile
+  
+  - path: /api/v1/auth/profile
+    method: PUT
+    service: auth
+    rpc: UpdateUserProfile
+  
+  - path: /api/v1/auth/logout
+    method: POST
+    service: auth
+    rpc: Logout
+  
+  # Integration endpoints
+  - path: /api/v1/integrations
+    method: GET
+    service: integration
+    rpc: ListProviders
+  
+  - path: /api/v1/integrations/:provider_id
+    method: GET
+    service: integration
+    rpc: GetProvider
+  
+  - path: /api/v1/integrations/:provider_id/auth
+    method: GET
+    service: integration
+    rpc: GetAuthURL
+  
+  - path: /api/v1/integrations/:provider_id/connect
+    method: POST
+    service: integration
+    rpc: ExchangeCode
+  
+  - path: /api/v1/integrations/:provider_id/disconnect
+    method: DELETE
+    service: integration
+    rpc: DisconnectIntegration
+  
+  - path: /api/v1/integrations/user
+    method: GET
+    service: integration
+    rpc: GetUserIntegrations
+  
+  - path: /api/v1/integrations/:provider_id/actions
+    method: POST
+    service: integration
+    rpc: ExecuteAction
+  
+  # Workflow endpoints
+  - path: /api/v1/workflows
+    method: GET
+    service: workflow
+    rpc: ListWorkflows
+  
+  - path: /api/v1/workflows
+    method: POST
+    service: workflow
+    rpc: CreateWorkflow
+  
+  - path: /api/v1/workflows/:workflow_id
+    method: GET
+    service: workflow
+    rpc: GetWorkflow
+  
+  - path: /api/v1/workflows/:workflow_id
+    method: PUT
+    service: workflow
+    rpc: UpdateWorkflow
+  
+  - path: /api/v1/workflows/:workflow_id
+    method: DELETE
+    service: workflow
+    rpc: DeleteWorkflow
+  
+  - path: /api/v1/workflows/:workflow_id/execute
+    method: POST
+    service: workflow
+    rpc: ExecuteWorkflow
+  
+  - path: /api/v1/workflows/:workflow_id/execute-async
+    method: POST
+    service: workflow
+    rpc: ExecuteWorkflowAsync
+  
+  - path: /api/v1/workflows/:workflow_id/executions
+    method: GET
+    service: workflow
+    rpc: ListExecutions
+  
+  - path: /api/v1/executions/:execution_id
+    method: GET
+    service: workflow
+    rpc: GetExecutionStatus
+  
+  - path: /api/v1/executions/:execution_id/cancel
+    method: POST
+    service: workflow
+    rpc: CancelExecution
+  
+  # Consent endpoints
+  - path: /api/v1/consents
+    method: POST
+    service: consent
+    rpc: GrantConsent
+  
+  - path: /api/v1/consents/:consent_id
+    method: DELETE
+    service: consent
+    rpc: RevokeConsent
+  
+  - path: /api/v1/consents/:consent_id
+    method: GET
+    service: consent
+    rpc: GetConsent
+  
+  - path: /api/v1/consents
+    method: GET
+    service: consent
+    rpc: ListConsents
+  
+  - path: /api/v1/consents/:consent_id/history
+    method: GET
+    service: consent
+    rpc: GetConsentHistory
+  
+  - path: /api/v1/consents/validate
+    method: POST
+    service: consent
+    rpc: ValidateConsent
+  
+  - path: /api/v1/consents/export
+    method: GET
+    service: consent
+    rpc: ExportUserConsents
+  
+  # Notification endpoints
+  - path: /api/v1/webhooks
+    method: GET
+    service: notification
+    rpc: ListWebhooks
+  
+  - path: /api/v1/webhooks
+    method: POST
+    service: notification
+    rpc: RegisterWebhook
+  
+  - path: /api/v1/webhooks/:webhook_id
+    method: PUT
+    service: notification
+    rpc: UpdateWebhook
+  
+  - path: /api/v1/webhooks/:webhook_id
+    method: DELETE
+    service: notification
+    rpc: DeleteWebhook
+  
+  - path: /api/v1/notifications
+    method: GET
+    service: notification
+    rpc: ListNotifications
+  
+  - path: /api/v1/notifications/:notification_id
+    method: GET
+    service: notification
+    rpc: GetNotification
+  
+  - path: /api/v1/notifications/:notification_id/read
+    method: POST
+    service: notification
+    rpc: MarkAsRead
+  
+  - path: /api/v1/notifications/settings
+    method: GET
+    service: notification
+    rpc: GetNotificationSettings
+  
+  - path: /api/v1/notifications/settings
+    method: PUT
+    service: notification
+    rpc: UpdateNotificationSettings
+
+redis:
+  host: ${REDIS_HOST:localhost}
+  port: ${REDIS_PORT:6379}
+  password: ${REDIS_PASSWORD:}
+  db: 5
+  pool_size: 20
+
+logging:
+  level: ${LOG_LEVEL:info}
+  format: json
+  output: stdout
+  access_log_enabled: true
+  log_request_body: false
+  log_response_body: false
+
+metrics:
+  enabled: true
+  port: 9095
+  path: /metrics
+  custom_metrics:
+    - http_requests_total
+    - http_request_duration_seconds
+    - http_response_size_bytes
+    - grpc_client_requests_total
+    - grpc_client_request_duration_seconds
+
+tracing:
+  enabled: ${TRACING_ENABLED:true}
+  endpoint: ${JAEGER_ENDPOINT:http://localhost:14268/api/traces}
+  service_name: api-gateway
+  sample_rate: 0.5
+
+health_check:
+  enabled: true
+  path: /health
+  include_services: true

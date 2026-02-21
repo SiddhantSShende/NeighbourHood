@@ -1,0 +1,89 @@
+# Auth Service Configuration
+
+server:
+  port: 50051
+  grpc:
+    max_recv_msg_size: 4194304  # 4MB
+    max_send_msg_size: 4194304  # 4MB
+    keepalive:
+      time: 30s
+      timeout: 10s
+  shutdown_timeout: 30s
+
+database:
+  host: ${DB_HOST:localhost}
+  port: ${DB_PORT:5432}
+  name: ${DB_NAME:neighbourhood_auth}
+  user: ${DB_USER:postgres}
+  password: ${DB_PASSWORD:}
+  ssl_mode: ${DB_SSL_MODE:disable}
+  max_open_conns: 25
+  max_idle_conns: 5
+  conn_max_lifetime: 5m
+
+redis:
+  host: ${REDIS_HOST:localhost}
+  port: ${REDIS_PORT:6379}
+  password: ${REDIS_PASSWORD:}
+  db: 0
+  pool_size: 10
+
+auth:
+  jwt:
+    secret: ${JWT_SECRET:change-this-in-production}
+    access_token_ttl: 15m
+    refresh_token_ttl: 168h  # 7 days
+    issuer: neighbourhood-auth
+  
+  oauth:
+    google:
+      client_id: ${GOOGLE_CLIENT_ID:}
+      client_secret: ${GOOGLE_CLIENT_SECRET:}
+      redirect_url: ${GOOGLE_REDIRECT_URL:http://localhost:8080/auth/google/callback}
+      scopes:
+        - email
+        - profile
+    
+    github:
+      client_id: ${GITHUB_CLIENT_ID:}
+      client_secret: ${GITHUB_CLIENT_SECRET:}
+      redirect_url: ${GITHUB_REDIRECT_URL:http://localhost:8080/auth/github/callback}
+      scopes:
+        - user:email
+    
+    microsoft:
+      client_id: ${MICROSOFT_CLIENT_ID:}
+      client_secret: ${MICROSOFT_CLIENT_SECRET:}
+      redirect_url: ${MICROSOFT_REDIRECT_URL:http://localhost:8080/auth/microsoft/callback}
+      scopes:
+        - openid
+        - profile
+        - email
+
+security:
+  bcrypt_cost: 12
+  password_min_length: 8
+  max_login_attempts: 5
+  lockout_duration: 15m
+  session_timeout: 24h
+
+logging:
+  level: ${LOG_LEVEL:info}    # debug, info, warn, error
+  format: json                 # json, text
+  output: stdout              # stdout, file
+  file_path: /var/log/auth-service.log
+
+metrics:
+  enabled: true
+  port: 9090
+  path: /metrics
+
+tracing:
+  enabled: ${TRACING_ENABLED:true}
+  endpoint: ${JAEGER_ENDPOINT:http://localhost:14268/api/traces}
+  service_name: auth-service
+  sample_rate: 0.1
+
+health_check:
+  enabled: true
+  interval: 30s

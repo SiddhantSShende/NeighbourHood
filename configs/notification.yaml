@@ -1,0 +1,223 @@
+# Notification Service Configuration
+
+server:
+  port: 50055
+  grpc:
+    max_recv_msg_size: 8388608  # 8MB
+    max_send_msg_size: 8388608  # 8MB
+    keepalive:
+      time: 30s
+      timeout: 10s
+  shutdown_timeout: 30s
+
+database:
+  type: mongodb
+  uri: ${MONGODB_URI:mongodb://localhost:27017}
+  name: ${MONGODB_NAME:neighbourhood_notifications}
+  max_pool_size: 50
+  min_pool_size: 10
+  connection_timeout: 10s
+
+redis:
+  host: ${REDIS_HOST:localhost}
+  port: ${REDIS_PORT:6379}
+  password: ${REDIS_PASSWORD:}
+  db: 4
+  pool_size: 10
+
+message_queue:
+  type: rabbitmq
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    user: ${RABBITMQ_USER:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    vhost: /
+    exchange: notifications
+    queue: notification_delivery
+    prefetch_count: 50
+
+notification:
+  max_batch_size: 100
+  delivery_retry_attempts: 3
+  delivery_retry_delay: 30s
+  failed_notification_ttl: 7d
+  enable_deduplication: true
+  deduplication_window: 5m
+
+webhooks:
+  max_webhooks_per_user: 10
+  default_timeout: 30s
+  verify_ssl: true
+  max_payload_size_mb: 5
+  
+  retry:
+    max_attempts: 5
+    initial_delay: 10s
+    max_delay: 300s
+    backoff_multiplier: 2
+  
+  rate_limiting:
+    max_requests_per_minute: 60
+    enable_per_webhook_limits: true
+
+channels:
+  email:
+    enabled: true
+    provider: smtp  # smtp, sendgrid, ses
+    
+    smtp:
+      host: ${SMTP_HOST:localhost}
+      port: ${SMTP_PORT:587}
+      username: ${SMTP_USERNAME:}
+      password: ${SMTP_PASSWORD:}
+      from: ${SMTP_FROM:noreply@neighbourhood.dev}
+      use_tls: true
+    
+    sendgrid:
+      api_key: ${SENDGRID_API_KEY:}
+      from: ${SENDGRID_FROM:noreply@neighbourhood.dev}
+    
+    aws_ses:
+      region: ${AWS_REGION:us-east-1}
+      access_key_id: ${AWS_ACCESS_KEY_ID:}
+      secret_access_key: ${AWS_SECRET_ACCESS_KEY:}
+      from: ${SES_FROM:noreply@neighbourhood.dev}
+    
+    templates:
+      welcome: templates/email/welcome.html
+      consent_granted: templates/email/consent_granted.html
+      consent_revoked: templates/email/consent_revoked.html
+      workflow_completed: templates/email/workflow_completed.html
+      workflow_failed: templates/email/workflow_failed.html
+  
+  sms:
+    enabled: true
+    provider: twilio  # twilio, sns
+    
+    twilio:
+      account_sid: ${TWILIO_ACCOUNT_SID:}
+      auth_token: ${TWILIO_AUTH_TOKEN:}
+      from_number: ${TWILIO_FROM_NUMBER:}
+    
+    aws_sns:
+      region: ${AWS_REGION:us-east-1}
+      access_key_id: ${AWS_ACCESS_KEY_ID:}
+      secret_access_key: ${AWS_SECRET_ACCESS_KEY:}
+  
+  push:
+    enabled: true
+    provider: fcm  # fcm, apns
+    
+    fcm:
+      credentials_file: ${FCM_CREDENTIALS_FILE:}
+      project_id: ${FCM_PROJECT_ID:}
+    
+    apns:
+      key_id: ${APNS_KEY_ID:}
+      team_id: ${APNS_TEAM_ID:}
+      bundle_id: ${APNS_BUNDLE_ID:}
+      key_file: ${APNS_KEY_FILE:}
+      production: ${APNS_PRODUCTION:false}
+  
+  in_app:
+    enabled: true
+    real_time: true
+    persistence_ttl: 30d
+
+preferences:
+  allow_quiet_hours: true
+  default_quiet_hours:
+    enabled: false
+    start: "22:00"
+    end: "08:00"
+    timezone: UTC
+  
+  default_channels:
+    - email
+    - in_app
+  
+  allow_channel_preferences: true
+  allow_category_preferences: true
+
+categories:
+  - id: system
+    name: System Notifications
+    description: Critical system updates and alerts
+    default_enabled: true
+    allow_disable: false
+  
+  - id: workflow
+    name: Workflow Updates
+    description: Workflow execution status and results
+    default_enabled: true
+    allow_disable: true
+  
+  - id: integration
+    name: Integration Events
+    description: Integration connection and sync updates
+    default_enabled: true
+    allow_disable: true
+  
+  - id: consent
+    name: Consent Management
+    description: Consent grants, revocations, and expirations
+    default_enabled: true
+    allow_disable: false
+  
+  - id: security
+    name: Security Alerts
+    description: Login attempts and security events
+    default_enabled: true
+    allow_disable: false
+  
+  - id: marketing
+    name: Marketing Communications
+    description: Product updates and newsletters
+    default_enabled: false
+    allow_disable: true
+
+templates:
+  engine: handlebars
+  cache_enabled: true
+  cache_ttl: 1h
+  template_path: templates/
+
+services:
+  auth_service:
+    address: ${AUTH_SERVICE_ADDR:localhost:50051}
+    timeout: 10s
+    retry_attempts: 3
+  
+  workflow_service:
+    address: ${WORKFLOW_SERVICE_ADDR:localhost:50053}
+    timeout: 10s
+    retry_attempts: 2
+
+logging:
+  level: ${LOG_LEVEL:info}
+  format: json
+  output: stdout
+  mask_sensitive_data: true
+
+metrics:
+  enabled: true
+  port: 9094
+  path: /metrics
+  custom_metrics:
+    - notifications_sent_total
+    - notifications_failed_total
+    - webhook_deliveries_total
+    - webhook_failures_total
+    - notification_delivery_duration_seconds
+
+tracing:
+  enabled: ${TRACING_ENABLED:true}
+  endpoint: ${JAEGER_ENDPOINT:http://localhost:14268/api/traces}
+  service_name: notification-service
+  sample_rate: 0.2
+
+health_check:
+  enabled: true
+  interval: 30s
+  include_dependencies: true

@@ -1,0 +1,152 @@
+# Integration Service Configuration
+
+server:
+  port: 50052
+  grpc:
+    max_recv_msg_size: 10485760  # 10MB
+    max_send_msg_size: 10485760  # 10MB
+    keepalive:
+      time: 30s
+      timeout: 10s
+  shutdown_timeout: 30s
+
+database:
+  host: ${DB_HOST:localhost}
+  port: ${DB_PORT:5432}
+  name: ${DB_NAME:neighbourhood_integration}
+  user: ${DB_USER:postgres}
+  password: ${DB_PASSWORD:}
+  ssl_mode: ${DB_SSL_MODE:disable}
+  max_open_conns: 50
+  max_idle_conns: 10
+  conn_max_lifetime: 5m
+
+redis:
+  host: ${REDIS_HOST:localhost}
+  port: ${REDIS_PORT:6379}
+  password: ${REDIS_PASSWORD:}
+  db: 1
+  pool_size: 20
+
+providers:
+  # Communication & Collaboration
+  slack:
+    enabled: ${SLACK_ENABLED:true}
+    client_id: ${SLACK_CLIENT_ID:}
+    client_secret: ${SLACK_CLIENT_SECRET:}
+    redirect_url: ${SLACK_REDIRECT_URL:http://localhost:8080/integrations/slack/callback}
+    rate_limit_per_minute: 60
+    timeout: 30s
+  
+  microsoft_teams:
+    enabled: ${MICROSOFT_TEAMS_ENABLED:true}
+    client_id: ${MICROSOFT_TEAMS_CLIENT_ID:}
+    client_secret: ${MICROSOFT_TEAMS_CLIENT_SECRET:}
+    redirect_url: ${MICROSOFT_TEAMS_REDIRECT_URL:http://localhost:8080/integrations/teams/callback}
+    rate_limit_per_minute: 60
+    timeout: 30s
+  
+  zoom:
+    enabled: ${ZOOM_ENABLED:true}
+    client_id: ${ZOOM_CLIENT_ID:}
+    client_secret: ${ZOOM_CLIENT_SECRET:}
+    redirect_url: ${ZOOM_REDIRECT_URL:http://localhost:8080/integrations/zoom/callback}
+    rate_limit_per_minute: 30
+    timeout: 30s
+  
+  discord:
+    enabled: ${DISCORD_ENABLED:true}
+    client_id: ${DISCORD_CLIENT_ID:}
+    client_secret: ${DISCORD_CLIENT_SECRET:}
+    redirect_url: ${DISCORD_REDIRECT_URL:http://localhost:8080/integrations/discord/callback}
+    rate_limit_per_minute: 50
+    timeout: 30s
+
+  # Email & Marketing
+  gmail:
+    enabled: ${GMAIL_ENABLED:true}
+    client_id: ${GMAIL_CLIENT_ID:}
+    client_secret: ${GMAIL_CLIENT_SECRET:}
+    redirect_url: ${GMAIL_REDIRECT_URL:http://localhost:8080/integrations/gmail/callback}
+    rate_limit_per_minute: 250
+    timeout: 30s
+  
+  sendgrid:
+    enabled: ${SENDGRID_ENABLED:true}
+    api_key: ${SENDGRID_API_KEY:}
+    rate_limit_per_minute: 600
+    timeout: 30s
+  
+  mailchimp:
+    enabled: ${MAILCHIMP_ENABLED:true}
+    client_id: ${MAILCHIMP_CLIENT_ID:}
+    client_secret: ${MAILCHIMP_CLIENT_SECRET:}
+    redirect_url: ${MAILCHIMP_REDIRECT_URL:}
+    rate_limit_per_minute: 10
+    timeout: 30s
+  
+  twilio:
+    enabled: ${TWILIO_ENABLED:true}
+    account_sid: ${TWILIO_ACCOUNT_SID:}
+    auth_token: ${TWILIO_AUTH_TOKEN:}
+    rate_limit_per_minute: 60
+    timeout: 30s
+
+  # Project Management
+  jira:
+    enabled: ${JIRA_ENABLED:true}
+    client_id: ${JIRA_CLIENT_ID:}
+    client_secret: ${JIRA_CLIENT_SECRET:}
+    redirect_url: ${JIRA_REDIRECT_URL:}
+    rate_limit_per_minute: 100
+    timeout: 30s
+  
+  trello:
+    enabled: ${TRELLO_ENABLED:true}
+    api_key: ${TRELLO_API_KEY:}
+    api_secret: ${TRELLO_API_SECRET:}
+    redirect_url: ${TRELLO_REDIRECT_URL:}
+    rate_limit_per_minute: 100
+    timeout: 30s
+  
+  asana:
+    enabled: ${ASANA_ENABLED:true}
+    client_id: ${ASANA_CLIENT_ID:}
+    client_secret: ${ASANA_CLIENT_SECRET:}
+    redirect_url: ${ASANA_REDIRECT_URL:}
+    rate_limit_per_minute: 150
+    timeout: 30s
+
+  # Add other providers...
+
+retry:
+  max_attempts: 3
+  initial_delay: 1s
+  max_delay: 30s
+  multiplier: 2
+
+circuit_breaker:
+  max_requests: 5
+  interval: 60s
+  timeout: 30s
+  fail_threshold: 5
+
+logging:
+  level: ${LOG_LEVEL:info}
+  format: json
+  output: stdout
+
+metrics:
+  enabled: true
+  port: 9091
+  path: /metrics
+
+tracing:
+  enabled: ${TRACING_ENABLED:true}
+  endpoint: ${JAEGER_ENDPOINT:http://localhost:14268/api/traces}
+  service_name: integration-service
+  sample_rate: 0.1
+
+health_check:
+  enabled: true
+  interval: 30s

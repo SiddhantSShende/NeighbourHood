@@ -1,0 +1,135 @@
+# Consent Service Configuration
+
+server:
+  port: 50054
+  grpc:
+    max_recv_msg_size: 4194304  # 4MB
+    max_send_msg_size: 4194304  # 4MB
+    keepalive:
+      time: 30s
+      timeout: 10s
+  shutdown_timeout: 30s
+
+database:
+  host: ${DB_HOST:localhost}
+  port: ${DB_PORT:5432}
+  name: ${DB_NAME:neighbourhood_consent}
+  user: ${DB_USER:postgres}
+  password: ${DB_PASSWORD:}
+  ssl_mode: ${DB_SSL_MODE:disable}
+  max_open_conns: 20
+  max_idle_conns: 5
+  conn_max_lifetime: 5m
+
+redis:
+  host: ${REDIS_HOST:localhost}
+  port: ${REDIS_PORT:6379}
+  password: ${REDIS_PASSWORD:}
+  db: 3
+  pool_size: 10
+
+consent:
+  default_expiration: 365d  # 1 year
+  allow_perpetual: false    # Force consent renewal
+  require_explicit: true    # No implicit consent
+  enable_granular_scope: true
+  
+  retention:
+    audit_log_retention: 7y  # GDPR requires 6-7 years
+    revoked_consent_retention: 3y
+    cleanup_interval: 24h
+
+  validation:
+    check_expiration: true
+    cache_validation_results: true
+    validation_cache_ttl: 5m
+
+  privacy:
+    enable_gdpr_compliance: true
+    enable_ccpa_compliance: true
+    enable_lgpd_compliance: true
+    allow_data_export: true
+    allow_data_deletion: true
+    deletion_grace_period: 30d
+
+  notification:
+    send_consent_granted: true
+    send_consent_revoked: true
+    send_consent_expiring: true
+    expiry_warning_days: 30
+
+scopes:
+  - id: user.profile.read
+    name: Read User Profile
+    description: Access to basic user profile information
+    
+  - id: user.profile.write
+    name: Write User Profile
+    description: Modify user profile information
+    
+  - id: integrations.read
+    name: Read Integrations
+    description: View connected integrations
+    
+  - id: integrations.write
+    name: Write Integrations
+    description: Connect and disconnect integrations
+    
+  - id: workflows.read
+    name: Read Workflows
+    description: View workflow definitions and executions
+    
+  - id: workflows.write
+    name: Write Workflows
+    description: Create and modify workflows
+    
+  - id: workflows.execute
+    name: Execute Workflows
+    description: Trigger workflow executions
+    
+  - id: notifications.read
+    name: Read Notifications
+    description: View notification history
+    
+  - id: notifications.write
+    name: Write Notifications
+    description: Configure notification settings
+
+services:
+  auth_service:
+    address: ${AUTH_SERVICE_ADDR:localhost:50051}
+    timeout: 10s
+    retry_attempts: 3
+  
+  notification_service:
+    address: ${NOTIFICATION_SERVICE_ADDR:localhost:50055}
+    timeout: 10s
+    retry_attempts: 2
+
+logging:
+  level: ${LOG_LEVEL:info}
+  format: json
+  output: stdout
+  mask_sensitive_data: true
+  audit_log_enabled: true
+
+metrics:
+  enabled: true
+  port: 9093
+  path: /metrics
+  custom_metrics:
+    - consent_grants_total
+    - consent_revocations_total
+    - consent_validations_total
+    - consent_expirations_total
+
+tracing:
+  enabled: ${TRACING_ENABLED:true}
+  endpoint: ${JAEGER_ENDPOINT:http://localhost:14268/api/traces}
+  service_name: consent-service
+  sample_rate: 0.3
+
+health_check:
+  enabled: true
+  interval: 30s
+  include_dependencies: true

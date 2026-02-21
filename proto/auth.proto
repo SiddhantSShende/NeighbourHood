@@ -1,0 +1,175 @@
+syntax = "proto3";
+
+package auth;
+
+option go_package = "neighbourhood/proto/gen/go/auth";
+
+import "google/protobuf/timestamp.proto";
+import "proto/common.proto";
+
+// AuthService handles authentication and user management
+service AuthService {
+  // User registration
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+  
+  // User login
+  rpc Login(LoginRequest) returns (LoginResponse);
+  
+  // Validate JWT token
+  rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
+  
+  // Refresh access token
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
+  
+  // Initiate OAuth flow
+  rpc InitiateOAuth(OAuthRequest) returns (OAuthResponse);
+  
+  // Complete OAuth flow
+  rpc CompleteOAuth(OAuthCallbackRequest) returns (OAuthCallbackResponse);
+  
+  // Get user profile
+  rpc GetUserProfile(GetUserRequest) returns (UserProfile);
+  
+  // Update user profile
+  rpc UpdateUserProfile(UpdateUserRequest) returns (UserProfile);
+  
+  // Logout
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+  
+  // Health check
+  rpc HealthCheck(common.HealthCheckRequest) returns (common.HealthCheckResponse);
+}
+
+// Messages
+
+message RegisterRequest {
+  string email = 1;
+  string password = 2;
+  string first_name = 3;
+  string last_name = 4;
+  string company = 5;
+}
+
+message RegisterResponse {
+  bool success = 1;
+  User user = 2;
+  string access_token = 3;
+  string refresh_token = 4;
+  common.Error error = 5;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  bool success = 1;
+  User user = 2;
+  string access_token = 3;
+  string refresh_token = 4;
+  int64 expires_in = 5;
+  common.Error error = 6;
+}
+
+message ValidateTokenRequest {
+  string token = 1;
+}
+
+message ValidateTokenResponse {
+  bool valid = 1;
+  string user_id = 2;
+  string email = 3;
+  google.protobuf.Timestamp expires_at = 4;
+  common.Error error = 5;
+}
+
+message RefreshTokenRequest {
+  string refresh_token = 1;
+}
+
+message RefreshTokenResponse {
+  bool success = 1;
+  string access_token = 2;
+  string refresh_token = 3;
+  int64 expires_in = 4;
+  common.Error error = 5;
+}
+
+message OAuthRequest {
+  enum Provider {
+    GOOGLE = 0;
+    GITHUB = 1;
+    MICROSOFT = 2;
+  }
+  Provider provider = 1;
+  string redirect_uri = 2;
+  repeated string scopes = 3;
+}
+
+message OAuthResponse {
+  bool success = 1;
+  string auth_url = 2;
+  string state = 3;
+  common.Error error = 4;
+}
+
+message OAuthCallbackRequest {
+  string provider = 1;
+  string code = 2;
+  string state = 3;
+}
+
+message OAuthCallbackResponse {
+  bool success = 1;
+  User user = 2;
+  string access_token = 3;
+  string refresh_token = 4;
+  bool is_new_user = 5;
+  common.Error error = 6;
+}
+
+message GetUserRequest {
+  string user_id = 1;
+}
+
+message UpdateUserRequest {
+  string user_id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string company = 4;
+  string avatar_url = 5;
+}
+
+message LogoutRequest {
+  string user_id = 1;
+  string token = 2;
+}
+
+message LogoutResponse {
+  bool success = 1;
+  common.Error error = 2;
+}
+
+// Domain Models
+
+message User {
+  string id = 1;
+  string email = 2;
+  string first_name = 3;
+  string last_name = 4;
+  string company = 5;
+  string avatar_url = 6;
+  string provider = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+  bool email_verified = 10;
+  repeated string roles = 11;
+}
+
+message UserProfile {
+  User user = 1;
+  int32 integration_count = 2;
+  int32 workflow_count = 3;
+  google.protobuf.Timestamp last_login = 4;
+}

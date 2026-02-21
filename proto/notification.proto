@@ -1,0 +1,250 @@
+syntax = "proto3";
+
+package notification;
+
+option go_package = "neighbourhood/proto/gen/go/notification";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+import "proto/common.proto";
+
+// NotificationService handles webhooks, events, and notifications
+service NotificationService {
+  // Register webhook
+  rpc RegisterWebhook(RegisterWebhookRequest) returns (RegisterWebhookResponse);
+  
+  // Update webhook
+  rpc UpdateWebhook(UpdateWebhookRequest) returns (UpdateWebhookResponse);
+  
+  // Delete webhook
+  rpc DeleteWebhook(DeleteWebhookRequest) returns (DeleteWebhookResponse);
+  
+  // List webhooks
+  rpc ListWebhooks(ListWebhooksRequest) returns (ListWebhooksResponse);
+  
+  // Send notification
+  rpc SendNotification(SendNotificationRequest) returns (SendNotificationResponse);
+  
+  // Get notification
+  rpc GetNotification(GetNotificationRequest) returns (Notification);
+  
+  // List notifications
+  rpc ListNotifications(ListNotificationsRequest) returns (ListNotificationsResponse);
+  
+  // Mark notification as read
+  rpc MarkAsRead(MarkAsReadRequest) returns (MarkAsReadResponse);
+  
+  // Get notification settings
+  rpc GetNotificationSettings(GetSettingsRequest) returns (NotificationSettings);
+  
+  // Update notification settings
+  rpc UpdateNotificationSettings(UpdateSettingsRequest) returns (NotificationSettings);
+  
+  // Health check
+  rpc HealthCheck(common.HealthCheckRequest) returns (common.HealthCheckResponse);
+}
+
+// Messages
+
+message RegisterWebhookRequest {
+  string user_id = 1;
+  string url = 2;
+  repeated string events = 3;
+  string secret = 4;
+  bool active = 5;
+  map<string, string> metadata = 6;
+}
+
+message RegisterWebhookResponse {
+  bool success = 1;
+  Webhook webhook = 2;
+  common.Error error = 3;
+}
+
+message UpdateWebhookRequest {
+  string webhook_id = 1;
+  string user_id = 2;
+  string url = 3;
+  repeated string events = 4;
+  bool active = 5;
+}
+
+message UpdateWebhookResponse {
+  bool success = 1;
+  Webhook webhook = 2;
+  common.Error error = 3;
+}
+
+message DeleteWebhookRequest {
+  string webhook_id = 1;
+  string user_id = 2;
+}
+
+message DeleteWebhookResponse {
+  bool success = 1;
+  common.Error error = 2;
+}
+
+message ListWebhooksRequest {
+  string user_id = 1;
+  bool active_only = 2;
+  common.Pagination pagination = 3;
+}
+
+message ListWebhooksResponse {
+  repeated Webhook webhooks = 1;
+  common.Pagination pagination = 2;
+}
+
+message SendNotificationRequest {
+  string user_id = 1;
+  NotificationType type = 2;
+  string title = 3;
+  string message = 4;
+  google.protobuf.Struct data = 5;
+  NotificationPriority priority = 6;
+  repeated string channels = 7;
+}
+
+message SendNotificationResponse {
+  bool success = 1;
+  string notification_id = 2;
+  repeated DeliveryResult delivery_results = 3;
+  common.Error error = 4;
+}
+
+message GetNotificationRequest {
+  string notification_id = 1;
+  string user_id = 2;
+}
+
+message ListNotificationsRequest {
+  string user_id = 1;
+  bool unread_only = 2;
+  NotificationType type = 3;
+  common.Pagination pagination = 4;
+}
+
+message ListNotificationsResponse {
+  repeated Notification notifications = 1;
+  int32 unread_count = 2;
+  common.Pagination pagination = 3;
+}
+
+message MarkAsReadRequest {
+  repeated string notification_ids = 1;
+  string user_id = 2;
+}
+
+message MarkAsReadResponse {
+  bool success = 1;
+  int32 marked_count = 2;
+  common.Error error = 3;
+}
+
+message GetSettingsRequest {
+  string user_id = 1;
+}
+
+message UpdateSettingsRequest {
+  string user_id = 1;
+  NotificationSettings settings = 2;
+}
+
+// Domain Models
+
+message Webhook {
+  string id = 1;
+  string user_id = 2;
+  string url = 3;
+  repeated string events = 4;
+  string secret = 5;
+  bool active = 6;
+  int32 delivery_success_count = 7;
+  int32 delivery_failure_count = 8;
+  google.protobuf.Timestamp last_triggered = 9;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp updated_at = 11;
+  map<string, string> metadata = 12;
+}
+
+message Notification {
+  string id = 1;
+  string user_id = 2;
+  NotificationType type = 3;
+  string title = 4;
+  string message = 5;
+  google.protobuf.Struct data = 6;
+  NotificationPriority priority = 7;
+  bool read = 8;
+  google.protobuf.Timestamp read_at = 9;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp expires_at = 11;
+  string action_url = 12;
+}
+
+message NotificationSettings {
+  string user_id = 1;
+  bool email_enabled = 2;
+  bool push_enabled = 3;
+  bool sms_enabled = 4;
+  bool in_app_enabled = 5;
+  repeated string muted_event_types = 6;
+  map<string, bool> channel_preferences = 7;
+  string timezone = 8;
+  repeated QuietHours quiet_hours = 9;
+}
+
+message QuietHours {
+  string day_of_week = 1;
+  string start_time = 2;
+  string end_time = 3;
+}
+
+message DeliveryResult {
+  string channel = 1;
+  bool success = 2;
+  string error_message = 3;
+  google.protobuf.Timestamp delivered_at = 4;
+}
+
+enum NotificationType {
+  INFO = 0;
+  SUCCESS = 1;
+  WARNING = 2;
+  ERROR = 3;
+  WORKFLOW_COMPLETED = 4;
+  WORKFLOW_FAILED = 5;
+  INTEGRATION_CONNECTED = 6;
+  INTEGRATION_DISCONNECTED = 7;
+  TOKEN_EXPIRING = 8;
+  CONSENT_REQUIRED = 9;
+  SYSTEM = 10;
+}
+
+enum NotificationPriority {
+  LOW = 0;
+  NORMAL = 1;
+  HIGH = 2;
+  URGENT = 3;
+}
+
+enum NotificationChannel {
+  EMAIL = 0;
+  PUSH = 1;
+  SMS = 2;
+  IN_APP = 3;
+  WEBHOOK = 4;
+}
+
+enum WebhookEvent {
+  WEBHOOK_WORKFLOW_STARTED = 0;
+  WEBHOOK_WORKFLOW_COMPLETED = 1;
+  WEBHOOK_WORKFLOW_FAILED = 2;
+  WEBHOOK_INTEGRATION_ADDED = 3;
+  WEBHOOK_INTEGRATION_REMOVED = 4;
+  WEBHOOK_CONSENT_GRANTED = 5;
+  WEBHOOK_CONSENT_REVOKED = 6;
+  WEBHOOK_USER_REGISTERED = 7;
+  WEBHOOK_USER_DELETED = 8;
+}

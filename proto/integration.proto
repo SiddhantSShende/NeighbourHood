@@ -1,0 +1,231 @@
+syntax = "proto3";
+
+package integration;
+
+option go_package = "neighbourhood/proto/gen/go/integration";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+import "proto/common.proto";
+
+// IntegrationService handles provider management and action execution
+service IntegrationService {
+  // List all available providers
+  rpc ListProviders(ListProvidersRequest) returns (ListProvidersResponse);
+  
+  // Get provider details
+  rpc GetProvider(GetProviderRequest) returns (Provider);
+  
+  // Get OAuth authorization URL
+  rpc GetAuthURL(GetAuthURLRequest) returns (GetAuthURLResponse);
+  
+  // Exchange authorization code for token
+  rpc ExchangeCode(ExchangeCodeRequest) returns (ExchangeCodeResponse);
+  
+  // Execute provider action
+  rpc ExecuteAction(ExecuteActionRequest) returns (ExecuteActionResponse);
+  
+  // Get user's connected integrations
+  rpc GetUserIntegrations(GetUserIntegrationsRequest) returns (GetUserIntegrationsResponse);
+  
+  // Connect integration for user
+  rpc ConnectIntegration(ConnectIntegrationRequest) returns (ConnectIntegrationResponse);
+  
+  // Disconnect integration
+  rpc DisconnectIntegration(DisconnectIntegrationRequest) returns (DisconnectIntegrationResponse);
+  
+  // Get provider status
+  rpc GetProviderStatus(ProviderStatusRequest) returns (ProviderStatusResponse);
+  
+  // Refresh integration token
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
+  
+  // Health check
+  rpc HealthCheck(common.HealthCheckRequest) returns (common.HealthCheckResponse);
+}
+
+// Messages
+
+message ListProvidersRequest {
+  string category = 1;
+  bool enabled_only = 2;
+  common.Pagination pagination = 3;
+}
+
+message ListProvidersResponse {
+  repeated Provider providers = 1;
+  common.Pagination pagination = 2;
+  int32 total_available = 3;
+}
+
+message GetProviderRequest {
+  string provider_type = 1;
+}
+
+message GetAuthURLRequest {
+  string provider_type = 1;
+  string user_id = 2;
+  string redirect_uri = 3;
+  repeated string scopes = 4;
+}
+
+message GetAuthURLResponse {
+  bool success = 1;
+  string auth_url = 2;
+  string state = 3;
+  common.Error error = 4;
+}
+
+message ExchangeCodeRequest {
+  string provider_type = 1;
+  string user_id = 2;
+  string code = 3;
+  string state = 4;
+}
+
+message ExchangeCodeResponse {
+  bool success = 1;
+  string integration_id = 2;
+  Token token = 3;
+  common.Error error = 4;
+}
+
+message ExecuteActionRequest {
+  string integration_id = 1;
+  string user_id = 2;
+  string action = 3;
+  google.protobuf.Struct payload = 4;
+  int32 timeout_seconds = 5;
+}
+
+message ExecuteActionResponse {
+  bool success = 1;
+  google.protobuf.Struct result = 2;
+  google.protobuf.Timestamp executed_at = 3;
+  int64 execution_time_ms = 4;
+  common.Error error = 5;
+}
+
+message GetUserIntegrationsRequest {
+  string user_id = 1;
+  string category = 2;
+  common.Pagination pagination = 3;
+}
+
+message GetUserIntegrationsResponse {
+  repeated UserIntegration integrations = 1;
+  common.Pagination pagination = 2;
+}
+
+message ConnectIntegrationRequest {
+  string user_id = 1;
+  string provider_type = 2;
+  Token token = 3;
+  map<string, string> metadata = 4;
+}
+
+message ConnectIntegrationResponse {
+  bool success = 1;
+  string integration_id = 2;
+  UserIntegration integration = 3;
+  common.Error error = 4;
+}
+
+message DisconnectIntegrationRequest {
+  string integration_id = 1;
+  string user_id = 2;
+  bool revoke_token = 3;
+}
+
+message DisconnectIntegrationResponse {
+  bool success = 1;
+  common.Error error = 2;
+}
+
+message ProviderStatusRequest {
+  string provider_type = 1;
+}
+
+message ProviderStatusResponse {
+  string provider_type = 1;
+  bool available = 2;
+  bool rate_limited = 3;
+  int32 requests_remaining = 4;
+  google.protobuf.Timestamp rate_limit_reset = 5;
+  google.protobuf.Timestamp last_checked = 6;
+}
+
+message RefreshTokenRequest {
+  string integration_id = 1;
+  string user_id = 2;
+}
+
+message RefreshTokenResponse {
+  bool success = 1;
+  Token token = 2;
+  common.Error error = 3;
+}
+
+// Domain Models
+
+message Provider {
+  string type = 1;
+  string name = 2;
+  string description = 3;
+  string category = 4;
+  string icon_url = 5;
+  bool enabled = 6;
+  repeated string supported_actions = 7;
+  repeated string required_scopes = 8;
+  ProviderConfig config = 9;
+  google.protobuf.Timestamp created_at = 10;
+}
+
+message ProviderConfig {
+  string auth_url = 1;
+  string token_url = 2;
+  string api_base_url = 3;
+  map<string, string> default_headers = 4;
+  int32 rate_limit_per_minute = 5;
+}
+
+message Token {
+  string access_token = 1;
+  string refresh_token = 2;
+  string token_type = 3;
+  google.protobuf.Timestamp expires_at = 4;
+  repeated string scopes = 5;
+}
+
+message UserIntegration {
+  string id = 1;
+  string user_id = 2;
+  string provider_type = 3;
+  Provider provider = 4;
+  Token token = 5;
+  string status = 6;
+  google.protobuf.Timestamp connected_at = 7;
+  google.protobuf.Timestamp last_used = 8;
+  map<string, string> metadata = 9;
+}
+
+enum IntegrationCategory {
+  COMMUNICATION = 0;
+  EMAIL_MARKETING = 1;
+  PROJECT_MANAGEMENT = 2;
+  CRM_SALES = 3;
+  DEVELOPMENT = 4;
+  STORAGE = 5;
+  PAYMENT = 6;
+  DATA_ANALYTICS = 7;
+  SOCIAL_MEDIA = 8;
+  OTHER = 9;
+}
+
+enum IntegrationStatus {
+  ACTIVE = 0;
+  INACTIVE = 1;
+  EXPIRED = 2;
+  REVOKED = 3;
+  ERROR = 4;
+}

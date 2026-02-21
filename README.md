@@ -274,13 +274,14 @@ consentManager.IntegrateFriendConsentSystem(apiURL, apiKey)
 
 ## 📝 License
 
-[Your License Here]
+[Private project - All rights reserved.]
 
 ## 👥 Contributing
 
-[Contributing Guidelines]
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
+OR SEND PULL REQUEST
 
 ## 📧 Contact
 
-[Your Contact Information]
+[siddhant.shende@consultrnr.com]
 # NeighbourHood

@@ -1,0 +1,203 @@
+syntax = "proto3";
+
+package consent;
+
+option go_package = "neighbourhood/proto/gen/go/consent";
+
+import "google/protobuf/timestamp.proto";
+import "proto/common.proto";
+
+// ConsentService handles GDPR-compliant consent management
+service ConsentService {
+  // Grant consent
+  rpc GrantConsent(GrantConsentRequest) returns (GrantConsentResponse);
+  
+  // Revoke consent
+  rpc RevokeConsent(RevokeConsentRequest) returns (RevokeConsentResponse);
+  
+  // Validate consent
+  rpc ValidateConsent(ValidateConsentRequest) returns (ValidateConsentResponse);
+  
+  // Get consent details
+  rpc GetConsent(GetConsentRequest) returns (Consent);
+  
+  // List user consents
+  rpc ListConsents(ListConsentsRequest) returns (ListConsentsResponse);
+  
+  // Get consent history
+  rpc GetConsentHistory(ConsentHistoryRequest) returns (ConsentHistoryResponse);
+  
+  // Bulk validate consents
+  rpc BulkValidateConsents(BulkValidateRequest) returns (BulkValidateResponse);
+  
+  // Export user consents (GDPR data export)
+  rpc ExportUserConsents(ExportConsentsRequest) returns (ExportConsentsResponse);
+  
+  // Health check
+  rpc HealthCheck(common.HealthCheckRequest) returns (common.HealthCheckResponse);
+}
+
+// Messages
+
+message GrantConsentRequest {
+  string user_id = 1;
+  string provider_type = 2;
+  string purpose = 3;
+  repeated string scopes = 4;
+  google.protobuf.Timestamp expires_at = 5;
+  map<string, string> metadata = 6;
+}
+
+message GrantConsentResponse {
+  bool success = 1;
+  Consent consent = 2;
+  common.Error error = 3;
+}
+
+message RevokeConsentRequest {
+  string consent_id = 1;
+  string user_id = 2;
+  string reason = 3;
+}
+
+message RevokeConsentResponse {
+  bool success = 1;
+  common.Error error = 2;
+}
+
+message ValidateConsentRequest {
+  string user_id = 1;
+  string provider_type = 2;
+  string purpose = 3;
+  repeated string required_scopes = 4;
+}
+
+message ValidateConsentResponse {
+  bool valid = 1;
+  string consent_id = 2;
+  google.protobuf.Timestamp expires_at = 3;
+  repeated string missing_scopes = 4;
+  string reason = 5;
+}
+
+message GetConsentRequest {
+  string consent_id = 1;
+  string user_id = 2;
+}
+
+message ListConsentsRequest {
+  string user_id = 1;
+  string provider_type = 2;
+  string status = 3;
+  common.Pagination pagination = 4;
+}
+
+message ListConsentsResponse {
+  repeated Consent consents = 1;
+  common.Pagination pagination = 2;
+}
+
+message ConsentHistoryRequest {
+  string user_id = 1;
+  string provider_type = 2;
+  google.protobuf.Timestamp from_date = 3;
+  google.protobuf.Timestamp to_date = 4;
+  common.Pagination pagination = 5;
+}
+
+message ConsentHistoryResponse {
+  repeated ConsentAuditLog logs = 1;
+  common.Pagination pagination = 2;
+}
+
+message BulkValidateRequest {
+  string user_id = 1;
+  repeated ConsentCheck checks = 2;
+}
+
+message ConsentCheck {
+  string provider_type = 1;
+  string purpose = 2;
+  repeated string required_scopes = 3;
+}
+
+message BulkValidateResponse {
+  repeated BulkValidateResult results = 1;
+  bool all_valid = 2;
+}
+
+message BulkValidateResult {
+  string provider_type = 1;
+  bool valid = 2;
+  string consent_id = 3;
+  repeated string missing_scopes = 4;
+}
+
+message ExportConsentsRequest {
+  string user_id = 1;
+  string format = 2; // json, csv, pdf
+}
+
+message ExportConsentsResponse {
+  bool success = 1;
+  bytes data = 2;
+  string format = 3;
+  google.protobuf.Timestamp exported_at = 4;
+  common.Error error = 5;
+}
+
+// Domain Models
+
+message Consent {
+  string id = 1;
+  string user_id = 2;
+  string provider_type = 3;
+  string purpose = 4;
+  repeated string scopes = 5;
+  ConsentStatus status = 6;
+  google.protobuf.Timestamp granted_at = 7;
+  google.protobuf.Timestamp revoked_at = 8;
+  google.protobuf.Timestamp expires_at = 9;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp updated_at = 11;
+  map<string, string> metadata = 12;
+  string revoke_reason = 13;
+}
+
+message ConsentAuditLog {
+  string id = 1;
+  string consent_id = 2;
+  string user_id = 3;
+  string provider_type = 4;
+  ConsentAction action = 5;
+  google.protobuf.Timestamp timestamp = 6;
+  string ip_address = 7;
+  string user_agent = 8;
+  map<string, string> metadata = 9;
+}
+
+enum ConsentStatus {
+  PENDING = 0;
+  GRANTED = 1;
+  REVOKED = 2;
+  EXPIRED = 3;
+  SUSPENDED = 4;
+}
+
+enum ConsentAction {
+  ACTION_GRANT = 0;
+  ACTION_REVOKE = 1;
+  ACTION_VALIDATE = 2;
+  ACTION_EXPIRE = 3;
+  ACTION_SUSPEND = 4;
+  ACTION_RESUME = 5;
+}
+
+enum ConsentPurpose {
+  DATA_ACCESS = 0;
+  DATA_PROCESSING = 1;
+  INTEGRATION_EXECUTION = 2;
+  WORKFLOW_AUTOMATION = 3;
+  ANALYTICS = 4;
+  NOTIFICATION = 5;
+}

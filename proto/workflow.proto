@@ -1,0 +1,288 @@
+syntax = "proto3";
+
+package workflow;
+
+option go_package = "neighbourhood/proto/gen/go/workflow";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+import "proto/common.proto";
+
+// WorkflowService handles workflow orchestration
+service WorkflowService {
+  // Create a new workflow
+  rpc CreateWorkflow(CreateWorkflowRequest) returns (CreateWorkflowResponse);
+  
+  // Update existing workflow
+  rpc UpdateWorkflow(UpdateWorkflowRequest) returns (UpdateWorkflowResponse);
+  
+  // Get workflow by ID
+  rpc GetWorkflow(GetWorkflowRequest) returns (Workflow);
+  
+  // List workflows
+  rpc ListWorkflows(ListWorkflowsRequest) returns (ListWorkflowsResponse);
+  
+  // Delete workflow
+  rpc DeleteWorkflow(DeleteWorkflowRequest) returns (DeleteWorkflowResponse);
+  
+  // Execute workflow
+  rpc ExecuteWorkflow(ExecuteWorkflowRequest) returns (ExecuteWorkflowResponse);
+  
+  // Execute workflow asynchronously
+  rpc ExecuteWorkflowAsync(ExecuteWorkflowRequest) returns (ExecuteWorkflowAsyncResponse);
+  
+  // Get execution status
+  rpc GetExecutionStatus(ExecutionStatusRequest) returns (ExecutionStatus);
+  
+  // List executions
+  rpc ListExecutions(ListExecutionsRequest) returns (ListExecutionsResponse);
+  
+  // Cancel execution
+  rpc CancelExecution(CancelExecutionRequest) returns (CancelExecutionResponse);
+  
+  // Retry failed execution
+  rpc RetryExecution(RetryExecutionRequest) returns (RetryExecutionResponse);
+  
+  // Health check
+  rpc HealthCheck(common.HealthCheckRequest) returns (common.HealthCheckResponse);
+}
+
+// Messages
+
+message CreateWorkflowRequest {
+  string user_id = 1;
+  string name = 2;
+  string description = 3;
+  repeated WorkflowStep steps = 4;
+  WorkflowConfig config = 5;
+  map<string, string> metadata = 6;
+}
+
+message CreateWorkflowResponse {
+  bool success = 1;
+  Workflow workflow = 2;
+  common.Error error = 3;
+}
+
+message UpdateWorkflowRequest {
+  string workflow_id = 1;
+  string user_id = 2;
+  string name = 3;
+  string description = 4;
+  repeated WorkflowStep steps = 5;
+  WorkflowConfig config = 6;
+  bool enabled = 7;
+}
+
+message UpdateWorkflowResponse {
+  bool success = 1;
+  Workflow workflow = 2;
+  common.Error error = 3;
+}
+
+message GetWorkflowRequest {
+  string workflow_id = 1;
+  string user_id = 2;
+}
+
+message ListWorkflowsRequest {
+  string user_id = 1;
+  string status = 2;
+  common.Pagination pagination = 3;
+}
+
+message ListWorkflowsResponse {
+  repeated Workflow workflows = 1;
+  common.Pagination pagination = 2;
+}
+
+message DeleteWorkflowRequest {
+  string workflow_id = 1;
+  string user_id = 2;
+}
+
+message DeleteWorkflowResponse {
+  bool success = 1;
+  common.Error error = 2;
+}
+
+message ExecuteWorkflowRequest {
+  string workflow_id = 1;
+  string user_id = 2;
+  google.protobuf.Struct input_data = 3;
+  map<string, string> context = 4;
+}
+
+message ExecuteWorkflowResponse {
+  bool success = 1;
+  ExecutionStatus status = 2;
+  google.protobuf.Struct output = 3;
+  common.Error error = 4;
+}
+
+message ExecuteWorkflowAsyncResponse {
+  bool success = 1;
+  string execution_id = 2;
+  string status = 3;
+  common.Error error = 4;
+}
+
+message ExecutionStatusRequest {
+  string execution_id = 1;
+  string user_id = 2;
+}
+
+message ListExecutionsRequest {
+  string workflow_id = 1;
+  string user_id = 2;
+  string status = 3;
+  common.Pagination pagination = 4;
+}
+
+message ListExecutionsResponse {
+  repeated ExecutionStatus executions = 1;
+  common.Pagination pagination = 2;
+}
+
+message CancelExecutionRequest {
+  string execution_id = 1;
+  string user_id = 2;
+  string reason = 3;
+}
+
+message CancelExecutionResponse {
+  bool success = 1;
+  common.Error error = 2;
+}
+
+message RetryExecutionRequest {
+  string execution_id = 1;
+  string user_id = 2;
+  bool retry_failed_steps_only = 3;
+}
+
+message RetryExecutionResponse {
+  bool success = 1;
+  string new_execution_id = 2;
+  common.Error error = 3;
+}
+
+// Domain Models
+
+message Workflow {
+  string id = 1;
+  string user_id = 2;
+  string name = 3;
+  string description = 4;
+  repeated WorkflowStep steps = 5;
+  WorkflowConfig config = 6;
+  string status = 7;
+  int32 execution_count = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
+  google.protobuf.Timestamp last_executed = 11;
+  map<string, string> metadata = 12;
+}
+
+message WorkflowStep {
+  string id = 1;
+  string name = 2;
+  string provider_type = 3;
+  string action = 4;
+  google.protobuf.Struct payload = 5;
+  repeated string depends_on = 6;
+  StepConfig config = 7;
+  map<string, string> output_mapping = 8;
+}
+
+message WorkflowConfig {
+  int32 timeout_seconds = 1;
+  int32 max_retries = 2;
+  bool continue_on_error = 3;
+  bool parallel_execution = 4;
+  TriggerConfig trigger = 5;
+  ErrorHandlingConfig error_handling = 6;
+}
+
+message StepConfig {
+  int32 timeout_seconds = 1;
+  int32 max_retries = 2;
+  int32 retry_delay_seconds = 3;
+  bool critical = 4;
+}
+
+message TriggerConfig {
+  enum TriggerType {
+    MANUAL = 0;
+    SCHEDULED = 1;
+    WEBHOOK = 2;
+    EVENT = 3;
+  }
+  TriggerType type = 1;
+  string cron_expression = 2;
+  string webhook_url = 3;
+  string event_type = 4;
+}
+
+message ErrorHandlingConfig {
+  enum Strategy {
+    STOP_ON_ERROR = 0;
+    CONTINUE_ON_ERROR = 1;
+    ROLLBACK_ON_ERROR = 2;
+  }
+  Strategy strategy = 1;
+  repeated string notification_channels = 2;
+  google.protobuf.Struct fallback_action = 3;
+}
+
+message ExecutionStatus {
+  string id = 1;
+  string workflow_id = 2;
+  string user_id = 3;
+  string status = 4;
+  google.protobuf.Timestamp started_at = 5;
+  google.protobuf.Timestamp completed_at = 6;
+  int64 duration_ms = 7;
+  repeated StepResult step_results = 8;
+  google.protobuf.Struct output = 9;
+  common.Error error = 10;
+  map<string, string> context = 11;
+}
+
+message StepResult {
+  string step_id = 1;
+  string step_name = 2;
+  string status = 3;
+  google.protobuf.Struct result = 4;
+  google.protobuf.Timestamp started_at = 5;
+  google.protobuf.Timestamp completed_at = 6;
+  int64 duration_ms = 7;
+  int32 retry_count = 8;
+  common.Error error = 9;
+}
+
+enum WorkflowStatus {
+  DRAFT = 0;
+  ACTIVE = 1;
+  PAUSED = 2;
+  ARCHIVED = 3;
+  DELETED = 4;
+}
+
+enum ExecutionStatusEnum {
+  PENDING = 0;
+  RUNNING = 1;
+  COMPLETED = 2;
+  FAILED = 3;
+  CANCELLED = 4;
+  TIMEOUT = 5;
+}
+
+enum StepStatus {
+  STEP_PENDING = 0;
+  STEP_RUNNING = 1;
+  STEP_COMPLETED = 2;
+  STEP_FAILED = 3;
+  STEP_SKIPPED = 4;
+  STEP_CANCELLED = 5;
+}
