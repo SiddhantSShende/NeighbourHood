@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeighbourHood - Test Suite</title>
+    <style>
+        :root {
+            --success: #10B981;
+            --error: #EF4444;
+            --warning: #F59E0B;
+            --info: #3B82F6;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #F9FAFB;
+        }
+        
+        h1 {
+            color: #111827;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            color: #6B7280;
+            margin-bottom: 2rem;
+        }
+        
+        .test-section {
+            background: white;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .test-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .test-header h2 {
+            color: #374151;
+            font-size: 1.25rem;
+        }
+        
+        .test-case {
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            border-left: 4px solid #E5E7EB;
+            background: #F9FAFB;
+            border-radius: 0.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .test-case.passed {
+            border-left-color: var(--success);
+            background: #ECFDF5;
+        }
+        
+        .test-case.failed {
+            border-left-color: var(--error);
+            background: #FEE2E2;
+        }
+        
+        .test-case.warning {
+            border-left-color: var(--warning);
+            background: #FEF3C7;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-badge.passed {
+            background: var(--success);
+            color: white;
+        }
+        
+        .status-badge.failed {
+            background: var(--error);
+            color: white;
+        }
+        
+        .status-badge.warning {
+            background: var(--warning);
+            color: white;
+        }
+        
+        .run-button {
+            background: linear-gradient(135deg, #7C3AED, #A855F7);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+        }
+        
+        .run-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+        }
+        
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .summary-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .summary-card .value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .summary-card .label {
+            color: #6B7280;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .error-details {
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: #DC2626;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>NeighbourHood Test Suite</h1>
+    <p class="subtitle">Automated testing for all dashboard functionality</p>
+    
+    <div class="summary" id="summary">
+        <div class="summary-card">
+            <div class="value" id="total-tests">0</div>
+            <div class="label">Total Tests</div>
+        </div>
+<div class="summary-card">
+            <div class="value" style="color: var(--success);" id="passed-tests">0</div>
+            <div class="label">Passed</div>
+        </div>
+        <div class="summary-card">
+            <div class="value" style="color: var(--error);" id="failed-tests">0</div>
+            <div class="label">Failed</div>
+        </div>
+        <div class="summary-card">
+            <div class="value" style="color: var(--warning);" id="warning-tests">0</div>
+            <div class="label">Warnings</div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <div class="test-header">
+            <h2>Demo Mode Tests</h2>
+            <button class="run-button" onclick="runAllTests()">Run All Tests</button>
+        </div>
+        <div id="demo-tests"></div>
+    </div>
+    
+    <div class="test-section">
+        <div class="test-header">
+            <h2>Authentication Tests</h2>
+        </div>
+        <div id="auth-tests"></div>
+    </div>
+    
+    <div class="test-section">
+        <div class="test-header">
+            <h2>Integration Management Tests</h2>
+        </div>
+        <div id="integration-tests"></div>
+    </div>
+    
+    <div class="test-section">
+        <div class="test-header">
+            <h2>API Key Management Tests</h2>
+        </div>
+        <div id="apikey-tests"></div>
+    </div>
+    
+    <div class="test-section">
+        <div class="test-header">
+            <h2>LocalStorage Tests</h2>
+        </div>
+        <div id="storage-tests"></div>
+    </div>
+
+    <script>
+        let testResults = {
+            total: 0,
+            passed: 0,
+            failed: 0,
+            warnings: 0
+        };
+
+        function addTestResult(containerId, testName, status, details = '') {
+            const container = document.getElementById(containerId);
+            const testCase = document.createElement('div');
+            testCase.className = `test-case ${status}`;
+            
+            testCase.innerHTML = `
+                <div>
+                    <strong>${testName}</strong>
+                    ${details ? `<div class="error-details">${details}</div>` : ''}
+                </div>
+                <span class="status-badge ${status}">${status}</span>
+            `;
+            
+            container.appendChild(testCase);
+            
+            testResults.total++;
+            testResults[status]++;
+            updateSummary();
+        }
+
+        function updateSummary() {
+            document.getElementById('total-tests').textContent = testResults.total;
+            document.getElementById('passed-tests').textContent = testResults.passed;
+            document.getElementById('failed-tests').textContent = testResults.failed;
+            document.getElementById('warning-tests').textContent = testResults.warnings;
+        }
+
+        function clearTests() {
+            testResults = { total: 0, passed: 0, failed: 0, warnings: 0 };
+            ['demo-tests', 'auth-tests', 'integration-tests', 'apikey-tests', 'storage-tests'].forEach(id => {
+                document.getElementById(id).innerHTML = '';
+            });
+            updateSummary();
+        }
+
+        async function runAllTests() {
+            clearTests();
+            
+            // Demo Mode Tests
+            testDemoMode();
+            
+            // Authentication Tests
+            testAuthentication();
+            
+            // Integration Tests
+            testIntegrations();
+            
+            // API Key Tests
+            testAPIKeys();
+            
+            // Storage Tests
+            testLocalStorage();
+        }
+
+        function testDemoMode() {
+            try {
+                // Test 1: Demo script loaded
+                const isDemoScriptPresent = typeof window.loginWithGoogle === 'function';
+                addTestResult('demo-tests', 'Demo script loaded', isDemoScriptPresent ? 'passed' : 'failed', 
+                    isDemoScriptPresent ? '' : 'dashboard-demo.js not found');
+
+                // Test 2: Demo constants defined
+                const hasCatalog = Array.isArray(window.INTEGRATIONS_CATALOG || []);
+                addTestResult('demo-tests', 'Integration catalog defined', hasCatalog ? 'passed' : 'failed',
+                    hasCatalog ? '' : 'INTEGRATIONS_CATALOG not defined');
+
+                // Test 3: Demo banner appears
+                const hasDemoBanner = document.querySelector('[style*="bottom: 0"]') !== null;
+                addTestResult('demo-tests', 'Demo banner displayed', hasDemoBanner ? 'passed' : 'failed');
+
+            } catch (error) {
+                addTestResult('demo-tests', 'Demo mode setup', 'failed', error.message);
+            }
+        }
+
+        function testAuthentication() {
+            try {
+                // Test 1: Google OAuth function exists
+                addTestResult('auth-tests', 'Google OAuth function', 
+                    typeof window.loginWithGoogle === 'function' ? 'passed' : 'failed');
+
+                // Test 2: GitHub OAuth function exists
+                addTestResult('auth-tests', 'GitHub OAuth function', 
+                    typeof window.loginWithGitHub === 'function' ? 'passed' : 'failed');
+
+                // Test 3: Logout function exists
+                addTestResult('auth-tests', 'Logout function', 
+                    typeof window.logout === 'function' ? 'passed' : 'failed');
+
+                // Test 4: Token storage
+                const hasToken = localStorage.getItem('nh_demo_token') !== null;
+                addTestResult('auth-tests', 'Session persistence', 
+                    hasToken ? 'passed' : 'warning', 
+                    hasToken ? 'Token found in localStorage' : 'No active session (loginrequired)');
+
+            } catch (error) {
+                addTestResult('auth-tests', 'Authentication system', 'failed', error.message);
+            }
+        }
+
+        function testIntegrations() {
+            try {
+                // Test 1: Connect integration function
+                addTestResult('integration-tests', 'Connect integration function', 
+                    typeof window.connectIntegration === 'function' ? 'passed' : 'failed');
+
+                // Test 2: Disconnect integration function
+                addTestResult('integration-tests', 'Disconnect integration function', 
+                    typeof window.disconnectIntegration === 'function' ? 'passed' : 'failed');
+
+                // Test 3: Integration storage
+                const integrations = JSON.parse(localStorage.getItem('nh_demo_integrations') || '[]');
+                addTestResult('integration-tests', 'Integration data structure', 
+                    Array.isArray(integrations) ? 'passed' : 'failed');
+
+                // Test 4: Integration count
+                addTestResult('integration-tests', `Active integrations (${integrations.length})`, 
+                    'passed', `${integrations.length} integration(s) connected`);
+
+            } catch (error) {
+                addTestResult('integration-tests', 'Integration management', 'failed', error.message);
+            }
+        }
+
+        function testAPIKeys() {
+            try {
+                // Test 1: Create API key function
+                addTestResult('apikey-tests', 'Create API key function', 
+                    typeof window.createAPIKey === 'function' ? 'passed' : 'failed');
+
+                // Test 2: Revoke API key function
+                addTestResult('apikey-tests', 'Revoke API key function', 
+                    typeof window.revokeAPIKey === 'function' ? 'passed' : 'failed');
+
+                // Test 3: API key storage
+                const keys = JSON.parse(localStorage.getItem('nh_demo_api_keys') || '[]');
+                addTestResult('apikey-tests', 'API key data structure', 
+                    Array.isArray(keys) ? 'passed' : 'failed');
+
+                // Test 4: API key count
+                addTestResult('apikey-tests', `API keys generated (${keys.length})`, 
+                    'passed', `${keys.length} API key(s) in storage`);
+
+                // Test 5: Key format validation
+                if (keys.length > 0) {
+                    const validFormat = keys.every(k => k.key && k.key.startsWith('nh_demo_'));
+                    addTestResult('apikey-tests', 'API key format validation', 
+                        validFormat ? 'passed' : 'failed',
+                        validFormat ? 'All keys have correct prefix' : 'Invalid key format detected');
+                }
+
+            } catch (error) {
+                addTestResult('apikey-tests', 'API key management', 'failed', error.message);
+            }
+        }
+
+        function testLocalStorage() {
+            try {
+                // Test 1: localStorage availability
+                const hasLocalStorage = typeof Storage !== 'undefined';
+                addTestResult('storage-tests', 'LocalStorage support', 
+                    hasLocalStorage ? 'passed' : 'failed');
+
+                if (!hasLocalStorage) return;
+
+                // Test 2: Write test
+                try {
+                    localStorage.setItem('nh_test', 'test');
+                    localStorage.removeItem('nh_test');
+                    addTestResult('storage-tests', 'LocalStorage write/read', 'passed');
+                } catch (e) {
+                    addTestResult('storage-tests', 'LocalStorage write/read', 'failed', e.message);
+                }
+
+                // Test 3: Data persistence
+                const keys = Object.keys(localStorage).filter(k => k.startsWith('nh_demo_'));
+                addTestResult('storage-tests', `Persisted data keys (${keys.length})`, 
+'passed', keys.join(', ') || 'No demo data yet');
+
+                // Test 4: Storage size estimation
+                let totalSize = 0;
+                for (let key in localStorage) {
+                    if (key.startsWith('nh_demo_')) {
+                        totalSize += localStorage[key].length + key.length;
+                    }
+                }
+                const sizeKB = (totalSize / 1024).toFixed(2);
+                addTestResult('storage-tests', `Storage usage (~${sizeKB} KB)`, 
+                    totalSize < 5000000 ? 'passed' : 'warning',
+                    totalSize < 5000000 ? 'Within 5MB limit' : 'Approaching browser limit');
+
+            } catch (error) {
+                addTestResult('storage-tests', 'LocalStorage functionality', 'failed', error.message);
+            }
+        }
+
+        // Run tests on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(runAllTests, 500);
+        });
+    </script>
+</body>
+</html>

@@ -480,6 +480,78 @@ tr:hover {
 .text-secondary { color: var(--text-secondary); }
 .text-tertiary { color: var(--text-tertiary); }
 .text-purple { color: var(--purple-700); }
+.text-success { color: var(--success-text); }
+
+/* Integration Cards */
+.integration-card {
+    background: var(--bg-card);
+    border: 2px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.integration-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--purple-500);
+}
+
+.integration-card.connected {
+    border-color: var(--success-text);
+    background: var(--success-bg);
+}
+
+.integration-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.integration-header h4 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.badge {
+    background: var(--purple-100);
+    color: var(--purple-700);
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.integration-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* API Key Items */
+.api-key-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.api-key-item code {
+    font-family: 'Courier New', monospace;
+    background: var(--bg-secondary);
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+}
 
 /* Responsive */
 @media (max-width: 768px) {
@@ -504,5 +576,14 @@ tr:hover {
         flex-direction: column;
         gap: 1rem;
         text-align: center;
+    }
+    
+    .integration-card {
+        padding: 1rem;
+    }
+    
+    .integration-footer {
+        flex-direction: column;
+        gap: 0.5rem;
     }
 }
