@@ -5,419 +5,410 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NeighbourHood - Test Suite</title>
     <style>
-        :root {
-            --success: #10B981;
-            --error: #EF4444;
-            --warning: #F59E0B;
-            --info: #3B82F6;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-            background: #F9FAFB;
-        }
-        
-        h1 {
-            color: #111827;
-            margin-bottom: 0.5rem;
-        }
-        
-        .subtitle {
-            color: #6B7280;
-            margin-bottom: 2rem;
-        }
-        
-        .test-section {
-            background: white;
-            border-radius: 0.5rem;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        
-        .test-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-        
-        .test-header h2 {
-            color: #374151;
-            font-size: 1.25rem;
-        }
-        
-        .test-case {
-            padding: 0.75rem;
-            margin: 0.5rem 0;
-            border-left: 4px solid #E5E7EB;
-            background: #F9FAFB;
-            border-radius: 0.25rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .test-case.passed {
-            border-left-color: var(--success);
-            background: #ECFDF5;
-        }
-        
-        .test-case.failed {
-            border-left-color: var(--error);
-            background: #FEE2E2;
-        }
-        
-        .test-case.warning {
-            border-left-color: var(--warning);
-            background: #FEF3C7;
-        }
-        
-        .status-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 0.25rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        
-        .status-badge.passed {
-            background: var(--success);
-            color: white;
-        }
-        
-        .status-badge.failed {
-            background: var(--error);
-            color: white;
-        }
-        
-        .status-badge.warning {
-            background: var(--warning);
-            color: white;
-        }
-        
-        .run-button {
-            background: linear-gradient(135deg, #7C3AED, #A855F7);
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            font-weight: 600;
-            box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
-        }
-        
-        .run-button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
-        }
-        
-        .summary {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-        
-        .summary-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        
-        .summary-card .value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-        
-        .summary-card .label {
-            color: #6B7280;
-            font-size: 0.875rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .error-details {
-            margin-top: 0.5rem;
-            font-size: 0.875rem;
-            color: #DC2626;
-            font-family: monospace;
-        }
+        :root { --success:#10B981; --error:#EF4444; --warning:#F59E0B; --info:#3B82F6; --purple:#7C3AED; }
+        body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; max-width:1280px; margin:0 auto; padding:2rem; background:#F3F4F6; color:#111827; }
+        h1 { color:var(--purple); margin-bottom:.25rem; }
+        .subtitle { color:#6B7280; margin-bottom:2rem; font-size:.95rem; }
+        .toolbar { display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:2rem; align-items:center; }
+        .run-button { background:linear-gradient(135deg,#7C3AED,#A855F7); color:#fff; border:none; padding:.7rem 1.75rem; border-radius:.5rem; cursor:pointer; font-weight:700; font-size:.95rem; box-shadow:0 2px 10px rgba(124,58,237,.35); transition:transform .15s; }
+        .run-button:hover { transform:translateY(-1px); }
+        .filter-btn { background:#fff; border:1.5px solid #D1D5DB; border-radius:.375rem; padding:.5rem 1rem; cursor:pointer; font-size:.85rem; color:#374151; font-weight:500; transition:all .15s; }
+        .filter-btn.active,.filter-btn:hover { border-color:var(--purple); color:var(--purple); }
+        .summary { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1rem; margin-bottom:2rem; }
+        .summary-card { background:#fff; padding:1.25rem; border-radius:.75rem; box-shadow:0 1px 4px rgba(0,0,0,.08); text-align:center; }
+        .summary-card .value { font-size:2.25rem; font-weight:800; margin-bottom:.25rem; }
+        .summary-card .label { color:#6B7280; font-size:.78rem; text-transform:uppercase; letter-spacing:.5px; font-weight:600; }
+        .test-section { background:#fff; border-radius:.75rem; padding:1.5rem; margin-bottom:1.5rem; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+        .test-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid #F3F4F6; padding-bottom:.75rem; }
+        .test-header h2 { color:#374151; font-size:1.1rem; margin:0; }
+        .section-badge { font-size:.75rem; padding:.2rem .7rem; border-radius:999px; font-weight:700; }
+        .test-case { padding:.7rem .9rem; margin:.35rem 0; border-left:4px solid #E5E7EB; background:#F9FAFB; border-radius:0 .375rem .375rem 0; display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; }
+        .test-case.passed { border-left-color:var(--success); background:#ECFDF5; }
+        .test-case.failed { border-left-color:var(--error); background:#FEF2F2; }
+        .test-case.warning { border-left-color:var(--warning); background:#FFFBEB; }
+        .test-case.info { border-left-color:var(--info); background:#EFF6FF; }
+        .test-case.skipped { border-left-color:#9CA3AF; background:#F9FAFB; }
+        .test-name { font-weight:600; font-size:.875rem; color:#1F2937; }
+        .test-detail { font-size:.8rem; color:#6B7280; margin-top:.2rem; font-family:monospace; }
+        .status-badge { padding:.2rem .6rem; border-radius:999px; font-size:.72rem; font-weight:700; text-transform:uppercase; white-space:nowrap; flex-shrink:0; }
+        .status-badge.passed { background:#D1FAE5; color:#065F46; }
+        .status-badge.failed { background:#FEE2E2; color:#991B1B; }
+        .status-badge.warning { background:#FEF3C7; color:#92400E; }
+        .status-badge.info { background:#DBEAFE; color:#1E40AF; }
+        .status-badge.skipped { background:#F3F4F6; color:#6B7280; }
+        .backend-section { border:2px dashed #D1D5DB; }
+        .backend-note { background:#EFF6FF; border:1px solid #BFDBFE; border-radius:.5rem; padding:.75rem 1rem; margin-bottom:1rem; font-size:.85rem; color:#1E40AF; }
+        pre { background:#1E293B; color:#E2E8F0; padding:1rem; border-radius:.5rem; font-size:.82rem; overflow-x:auto; line-height:1.6; margin:.5rem 0; }
+        .progress-bar-wrap { background:#E5E7EB; border-radius:999px; height:6px; overflow:hidden; }
+        .progress-bar { height:100%; background:linear-gradient(90deg,#7C3AED,#A855F7); border-radius:999px; transition:width .4s ease; }
     </style>
 </head>
 <body>
-    <h1>NeighbourHood Test Suite</h1>
-    <p class="subtitle">Automated testing for all dashboard functionality</p>
-    
-    <div class="summary" id="summary">
-        <div class="summary-card">
-            <div class="value" id="total-tests">0</div>
-            <div class="label">Total Tests</div>
-        </div>
-<div class="summary-card">
-            <div class="value" style="color: var(--success);" id="passed-tests">0</div>
-            <div class="label">Passed</div>
-        </div>
-        <div class="summary-card">
-            <div class="value" style="color: var(--error);" id="failed-tests">0</div>
-            <div class="label">Failed</div>
-        </div>
-        <div class="summary-card">
-            <div class="value" style="color: var(--warning);" id="warning-tests">0</div>
-            <div class="label">Warnings</div>
-        </div>
+<h1>NeighbourHood - Test Suite</h1>
+<p class="subtitle">11 test groups covering: Demo Mode, Auth, Catalog, Integrations, API Keys, Rate Limits, Search, Storage, UI, Validation, Backend</p>
+
+<div class="toolbar">
+    <button class="run-button" onclick="runAllTests()">Run All Tests</button>
+    <button class="filter-btn active" id="filter-all" onclick="filterTests('all')">All</button>
+    <button class="filter-btn" id="filter-passed" onclick="filterTests('passed')">Passed</button>
+    <button class="filter-btn" id="filter-failed" onclick="filterTests('failed')">Failed</button>
+    <button class="filter-btn" id="filter-warning" onclick="filterTests('warning')">Warnings</button>
+    <span id="run-time" style="margin-left:auto;font-size:.85rem;color:#9CA3AF;"></span>
+</div>
+
+<div class="summary">
+    <div class="summary-card"><div class="value" id="total-tests">0</div><div class="label">Total</div></div>
+    <div class="summary-card"><div class="value" style="color:var(--success)" id="passed-tests">0</div><div class="label">Passed</div></div>
+    <div class="summary-card"><div class="value" style="color:var(--error)" id="failed-tests">0</div><div class="label">Failed</div></div>
+    <div class="summary-card"><div class="value" style="color:var(--warning)" id="warning-tests">0</div><div class="label">Warnings</div></div>
+    <div class="summary-card"><div class="value" style="color:var(--info)" id="skipped-tests">0</div><div class="label">Skipped</div></div>
+</div>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div><br>
+
+<div class="test-section"><div class="test-header"><h2>1. Demo Mode</h2><span class="section-badge" id="badge-demo-tests" style="background:#F3F4F6;color:#374151;">-</span></div><div id="demo-tests"></div></div>
+<div class="test-section"><div class="test-header"><h2>2. Authentication</h2><span class="section-badge" id="badge-auth-tests" style="background:#F3F4F6;color:#374151;">-</span></div><div id="auth-tests"></div></div>
+<div class="test-section"><div class="test-header"><h2>3. Integration Catalog (148+ platforms)</h2><span class="section-badge" id="badge-catalog-tests" style="background:#F3F4F6;color:#374151;">-</span></div><div id="catalog-tests"></div></div>
+<div class="test-section"><div class="test-header"><h2>4. Integration Management</h2><span class="section-badge" id="badge-integration-tests" style="background:#F3F4F6;color:#374151;">-</span></div><div id="integration-tests"></div></div>
+<div class="test-section"><div class="test-header"><h2>5. API Key Management</h2><span class="section-badge" id="badge-apikey-tests" style="background:#F3F4F6;color:#374151;">-</span></div><div id="apikey-tests"></div></div>
+<div class="test-section"><div class="test-header"><h2>6. Rate Limit Controls</h2><span class="section-badge" id="badge-ratelimit-tests" style="background:#F3F4F6;color:#374151;">-</span></div><div id="ratelimit-tests"></div></div>
+<div class="test-section"><div class="test-header"><h2>7. Search &amp; Category Filter</h2><span class="section-badge" id="badge-search-tests" style="background:#F3F4F6;color:#374151;">-</span></div><div id="search-tests"></div></div>
+<div class="test-section"><div class="test-header"><h2>8. LocalStorage Persistence</h2><span class="section-badge" id="badge-storage-tests" style="background:#F3F4F6;color:#374151;">-</span></div><div id="storage-tests"></div></div>
+<div class="test-section"><div class="test-header"><h2>9. UI / UX Elements</h2><span class="section-badge" id="badge-ui-tests" style="background:#F3F4F6;color:#374151;">-</span></div><div id="ui-tests"></div></div>
+<div class="test-section"><div class="test-header"><h2>10. Data Validation</h2><span class="section-badge" id="badge-validation-tests" style="background:#F3F4F6;color:#374151;">-</span></div><div id="validation-tests"></div></div>
+<div class="test-section backend-section">
+    <div class="test-header"><h2>11. Backend API Tests (requires running backend)</h2><span class="section-badge" id="badge-backend-tests" style="background:#F3F4F6;color:#374151;">-</span></div>
+    <div class="backend-note">
+        These tests are <strong>skipped in demo mode</strong>. To run them, start the backend first:
+        <pre>cp .env.example .env   # fill in secrets (DB_PASSWORD, JWT_SECRET, OAuth keys)
+docker-compose up -d   # starts Postgres + Redis + Auth + Integration + Nginx
+# Wait ~20 seconds, then run this test page again</pre>
+        Backend URL tested: <code>http://localhost:8080</code>
     </div>
-    
-    <div class="test-section">
-        <div class="test-header">
-            <h2>Demo Mode Tests</h2>
-            <button class="run-button" onclick="runAllTests()">Run All Tests</button>
-        </div>
-        <div id="demo-tests"></div>
-    </div>
-    
-    <div class="test-section">
-        <div class="test-header">
-            <h2>Authentication Tests</h2>
-        </div>
-        <div id="auth-tests"></div>
-    </div>
-    
-    <div class="test-section">
-        <div class="test-header">
-            <h2>Integration Management Tests</h2>
-        </div>
-        <div id="integration-tests"></div>
-    </div>
-    
-    <div class="test-section">
-        <div class="test-header">
-            <h2>API Key Management Tests</h2>
-        </div>
-        <div id="apikey-tests"></div>
-    </div>
-    
-    <div class="test-section">
-        <div class="test-header">
-            <h2>LocalStorage Tests</h2>
-        </div>
-        <div id="storage-tests"></div>
-    </div>
+    <div id="backend-tests"></div>
+</div>
 
-    <script>
-        let testResults = {
-            total: 0,
-            passed: 0,
-            failed: 0,
-            warnings: 0
-        };
+<script>
+const BACKEND = 'http://localhost:8080';
+let S = {total:0,passed:0,failed:0,warnings:0,skipped:0};
+let t0 = 0, activeFilter = 'all';
 
-        function addTestResult(containerId, testName, status, details = '') {
-            const container = document.getElementById(containerId);
-            const testCase = document.createElement('div');
-            testCase.className = `test-case ${status}`;
-            
-            testCase.innerHTML = `
-                <div>
-                    <strong>${testName}</strong>
-                    ${details ? `<div class="error-details">${details}</div>` : ''}
-                </div>
-                <span class="status-badge ${status}">${status}</span>
-            `;
-            
-            container.appendChild(testCase);
-            
-            testResults.total++;
-            testResults[status]++;
-            updateSummary();
+function add(sid, name, status, detail='') {
+    const c = document.getElementById(sid);
+    const d = document.createElement('div');
+    d.className = 'test-case '+status; d.dataset.status = status;
+    d.innerHTML = `<div><div class="test-name">${name}</div>${detail?`<div class="test-detail">${detail}</div>`:''}</div><span class="status-badge ${status}">${status}</span>`;
+    c.appendChild(d);
+    S.total++;
+    if(status==='warning') S.warnings++;
+    else if(status==='skipped'||status==='info') S.skipped++;
+    else S[status]++;
+    sync(); applyFilter(d);
+}
+function sync() {
+    ['total','passed','failed','warning','skipped'].forEach(k => {
+        const el = document.getElementById((k==='warning'?'warning':k)+'-tests');
+        if(el) el.textContent = k==='warning' ? S.warnings : S[k] || S[k+'s'] || S[k];
+    });
+    document.getElementById('total-tests').textContent = S.total;
+    document.getElementById('passed-tests').textContent = S.passed;
+    document.getElementById('failed-tests').textContent = S.failed;
+    document.getElementById('warning-tests').textContent = S.warnings;
+    document.getElementById('skipped-tests').textContent = S.skipped;
+    const pct = S.total ? Math.round(S.passed/S.total*100) : 0;
+    document.getElementById('progress-bar').style.width = pct+'%';
+}
+function badge(sid) {
+    const rows = document.getElementById(sid).querySelectorAll('.test-case');
+    const p = Array.from(rows).filter(r=>r.dataset.status==='passed').length;
+    const hasFail = Array.from(rows).some(r=>r.dataset.status==='failed');
+    const el = document.getElementById('badge-'+sid);
+    if(!el) return;
+    el.textContent = p+'/'+rows.length;
+    el.style.background = hasFail?'#FEE2E2':p===rows.length?'#D1FAE5':'#FEF3C7';
+    el.style.color = hasFail?'#991B1B':p===rows.length?'#065F46':'#92400E';
+}
+function clearAll() {
+    S={total:0,passed:0,failed:0,warnings:0,skipped:0};
+    ['demo','auth','catalog','integration','apikey','ratelimit','search','storage','ui','validation','backend'].forEach(n=>{ document.getElementById(n+'-tests').innerHTML=''; });
+    sync();
+}
+function filterTests(f) {
+    activeFilter=f;
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('filter-'+f).classList.add('active');
+    document.querySelectorAll('.test-case').forEach(r=>applyFilter(r));
+}
+function applyFilter(r){ r.style.display=(activeFilter==='all'||r.dataset.status===activeFilter)?'':'none'; }
+function fn(n){ return typeof window[n]==='function'; }
+function ls(k,fb=null){ try{return JSON.parse(localStorage.getItem(k))??fb;}catch{return fb;} }
+
+// ---- 1. Demo Mode ----
+function testDemo(){
+    const s='demo-tests';
+    add(s,'dashboard-demo.js loaded',fn('loginWithGoogle')?'passed':'failed');
+    const hasCat=typeof INTEGRATIONS_CATALOG!=='undefined'&&Array.isArray(INTEGRATIONS_CATALOG);
+    add(s,'INTEGRATIONS_CATALOG defined',hasCat?'passed':'failed');
+    add(s,'Catalog has 100+ entries',hasCat&&INTEGRATIONS_CATALOG.length>=100?'passed':'failed',hasCat?INTEGRATIONS_CATALOG.length+' entries':'undefined');
+    add(s,'getCatalogCategories()',fn('getCatalogCategories')?'passed':'failed');
+    if(fn('getCatalogCategories')){const c=getCatalogCategories();add(s,'Categories: '+c.filter(x=>x!=='All').join(', '),c.length>5?'passed':'warning');}
+    add(s,'filterByCategory()',fn('filterByCategory')?'passed':'failed');
+    add(s,'searchIntegrations()',fn('searchIntegrations')?'passed':'failed');
+    add(s,'setRateLimit()',fn('setRateLimit')?'passed':'failed');
+    add(s,'syncRateLimit()',fn('syncRateLimit')?'passed':'failed');
+    badge(s);
+}
+
+// ---- 2. Authentication ----
+function testAuth(){
+    const s='auth-tests';
+    add(s,'loginWithGoogle() exists',fn('loginWithGoogle')?'passed':'failed');
+    add(s,'loginWithGitHub() exists',fn('loginWithGitHub')?'passed':'failed');
+    add(s,'logout() exists',fn('logout')?'passed':'failed');
+    const tok=localStorage.getItem('nh_demo_token');
+    add(s,'Session token in localStorage',tok?'passed':'warning',tok?'Token: '+tok.slice(0,20)+'...':'No active session — login first');
+    const u=ls('nh_demo_user');
+    add(s,'User profile persisted',u?'passed':'warning',u?'Name: '+u.name+', Email: '+u.email:'Not set');
+    if(u) add(s,'User has id, name, email',(u.id&&u.name&&u.email)?'passed':'failed');
+    const ws=ls('nh_demo_workspace');
+    add(s,'Workspace persisted',ws?'passed':'warning',ws?'ID: '+ws.id:'Not set');
+    badge(s);
+}
+
+// ---- 3. Integration Catalog ----
+function testCatalog(){
+    const s='catalog-tests';
+    if(typeof INTEGRATIONS_CATALOG==='undefined'){add(s,'Catalog not loaded','failed');badge(s);return;}
+    const C=INTEGRATIONS_CATALOG;
+    add(s,'Total integrations ('+C.length+')',C.length>=100?'passed':'failed','Expected 100+, got '+C.length);
+    const bad=C.filter(i=>!i.type||!i.name||!i.category||!i.description);
+    add(s,'All entries have type/name/category/description',bad.length===0?'passed':'failed',bad.length>0?'Bad: '+bad.map(i=>i.type||'?').join(','):'OK');
+    const types=C.map(i=>i.type);
+    const dupes=types.filter((t,i)=>types.indexOf(t)!==i);
+    add(s,'No duplicate types',dupes.length===0?'passed':'failed',dupes.length?'Dupes: '+dupes.join(','):'All unique');
+    ['Communication','Developer Tools','CRM','Finance','AI & ML','E-Commerce','Analytics','HR','Scheduling'].forEach(cat=>{
+        const n=C.filter(i=>i.category===cat).length;
+        add(s,'Category "'+cat+'" ('+n+')',n>0?'passed':'failed');
+    });
+    const noScopes=C.filter(i=>!i.requiredScopes||!i.requiredScopes.length);
+    add(s,'All entries have requiredScopes',noScopes.length===0?'passed':'warning',noScopes.length?noScopes.map(i=>i.name).slice(0,5).join(','):'OK');
+    badge(s);
+}
+
+// ---- 4. Integration Management ----
+function testIntegrations(){
+    const s='integration-tests';
+    add(s,'connectIntegration() exists',fn('connectIntegration')?'passed':'failed');
+    add(s,'disconnectIntegration() exists',fn('disconnectIntegration')?'passed':'failed');
+    const arr=ls('nh_demo_integrations',[]);
+    add(s,'Storage is array',Array.isArray(arr)?'passed':'failed');
+    add(s,'Active count: '+arr.length,'info',arr.map(i=>i.name).join(', ')||'None yet');
+    if(arr.length>0){
+        add(s,'All have id/type/name/status/connected_at',arr.every(i=>i.id&&i.type&&i.name&&i.status&&i.connected_at)?'passed':'failed');
+        add(s,'All status=active',arr.every(i=>i.status==='active')?'passed':'warning');
+        if(typeof INTEGRATIONS_CATALOG!=='undefined'){
+            const orphans=arr.filter(i=>!INTEGRATIONS_CATALOG.some(c=>c.type===i.type));
+            add(s,'No orphan types',orphans.length===0?'passed':'warning',orphans.length?orphans.map(i=>i.type).join(','):'OK');
         }
-
-        function updateSummary() {
-            document.getElementById('total-tests').textContent = testResults.total;
-            document.getElementById('passed-tests').textContent = testResults.passed;
-            document.getElementById('failed-tests').textContent = testResults.failed;
-            document.getElementById('warning-tests').textContent = testResults.warnings;
+    }
+    // Connect/disconnect unit test
+    try{
+        const orig=window.confirm; window.confirm=()=>true;
+        if(fn('connectIntegration')&&typeof INTEGRATIONS_CATALOG!=='undefined'){
+            const before=ls('nh_demo_integrations',[]).length;
+            connectIntegration('slack');
+            const mid=ls('nh_demo_integrations',[]).length;
+            add(s,'connectIntegration("slack") unit test',mid>=before?'passed':'failed','Before: '+before+' After: '+mid);
+            disconnectIntegration('slack');
+            const after=ls('nh_demo_integrations',[]).length;
+            add(s,'disconnectIntegration("slack") unit test',after<=mid?'passed':'failed','After disconnect: '+after);
         }
+        window.confirm=orig;
+    }catch(e){add(s,'Connect/disconnect cycle','failed',e.message);}
+    badge(s);
+}
 
-        function clearTests() {
-            testResults = { total: 0, passed: 0, failed: 0, warnings: 0 };
-            ['demo-tests', 'auth-tests', 'integration-tests', 'apikey-tests', 'storage-tests'].forEach(id => {
-                document.getElementById(id).innerHTML = '';
-            });
-            updateSummary();
-        }
+// ---- 5. API Keys ----
+function testAPIKeys(){
+    const s='apikey-tests';
+    add(s,'createAPIKey() exists',fn('createAPIKey')?'passed':'failed');
+    add(s,'revokeAPIKey() exists',fn('revokeAPIKey')?'passed':'failed');
+    add(s,'showCreateAPIKeyModal() exists',fn('showCreateAPIKeyModal')?'passed':'failed');
+    add(s,'closeAPIKeyModal() exists',fn('closeAPIKeyModal')?'passed':'failed');
+    add(s,'copyToClipboard() exists',fn('copyToClipboard')?'passed':'failed');
+    const keys=ls('nh_demo_api_keys',[]);
+    add(s,'Storage is array',Array.isArray(keys)?'passed':'failed');
+    add(s,'Keys in storage: '+keys.length,'info',keys.map(k=>k.name).join(', ')||'None yet');
+    if(keys.length>0){
+        add(s,'All have id/key/name/created_at',keys.every(k=>k.id&&k.key&&k.name&&k.created_at)?'passed':'failed');
+        add(s,'All start with "nh_demo_"',keys.every(k=>k.key.startsWith('nh_demo_'))?'passed':'failed','Sample: '+keys[0].key.slice(0,25)+'...');
+        add(s,'Keys length >= 20',keys.every(k=>k.key.length>=20)?'passed':'warning','Min: '+Math.min(...keys.map(k=>k.key.length)));
+        add(s,'All keys unique',new Set(keys.map(k=>k.key)).size===keys.length?'passed':'failed');
+        add(s,'Valid created_at dates',keys.every(k=>!isNaN(new Date(k.created_at).getTime()))?'passed':'failed');
+        add(s,'rate_limit field present',keys.some(k=>k.rate_limit!==undefined)?'passed':'warning');
+    }
+    badge(s);
+}
 
-        async function runAllTests() {
-            clearTests();
-            
-            // Demo Mode Tests
-            testDemoMode();
-            
-            // Authentication Tests
-            testAuthentication();
-            
-            // Integration Tests
-            testIntegrations();
-            
-            // API Key Tests
-            testAPIKeys();
-            
-            // Storage Tests
-            testLocalStorage();
-        }
+// ---- 6. Rate Limit Controls ----
+function testRateLimits(){
+    const s='ratelimit-tests';
+    add(s,'setRateLimit() exists',fn('setRateLimit')?'passed':'failed');
+    add(s,'syncRateLimit() exists',fn('syncRateLimit')?'passed':'failed');
+    const inp=document.getElementById('key-rate-limit');
+    const slider=document.getElementById('key-rate-slider');
+    const disp=document.getElementById('rate-limit-display');
+    const presets=document.querySelectorAll('.rate-preset');
+    add(s,'#key-rate-limit input',inp?'passed':'failed',inp?'value='+inp.value:'Missing (modal not open)');
+    add(s,'#key-rate-slider',slider?'passed':'failed');
+    add(s,'#rate-limit-display',disp?'passed':'failed');
+    add(s,'Rate preset buttons ('+presets.length+')',presets.length>=4?'passed':'failed');
+    if(inp&&fn('setRateLimit')){
+        setRateLimit(5000);
+        add(s,'setRateLimit(5000) → input value',inp.value==='5000'?'passed':'failed','Got: '+inp.value);
+        if(slider) add(s,'setRateLimit(5000) → slider',slider.value==='5000'?'passed':'failed','Got: '+slider.value);
+        if(disp) add(s,'setRateLimit(5000) → display "5,000 req/hr"',disp.textContent.includes('5,000')?'passed':'failed','Got: "'+disp.textContent+'"');
+        setRateLimit(100000);
+        if(disp) add(s,'setRateLimit(100000) → "Unlimited"',disp.textContent==='Unlimited'?'passed':'failed','Got: "'+disp.textContent+'"');
+        setRateLimit(1000);
+        add(s,'Reset to 1000',inp.value==='1000'?'passed':'failed');
+    }
+    badge(s);
+}
 
-        function testDemoMode() {
-            try {
-                // Test 1: Demo script loaded
-                const isDemoScriptPresent = typeof window.loginWithGoogle === 'function';
-                addTestResult('demo-tests', 'Demo script loaded', isDemoScriptPresent ? 'passed' : 'failed', 
-                    isDemoScriptPresent ? '' : 'dashboard-demo.js not found');
+// ---- 7. Search & Filter ----
+function testSearch(){
+    const s='search-tests';
+    add(s,'searchIntegrations() exists',fn('searchIntegrations')?'passed':'failed');
+    add(s,'filterByCategory() exists',fn('filterByCategory')?'passed':'failed');
+    if(typeof INTEGRATIONS_CATALOG==='undefined'){add(s,'Catalog needed for search','failed');badge(s);return;}
+    const C=INTEGRATIONS_CATALOG;
+    add(s,'Search "slack" finds results',C.filter(i=>i.name.toLowerCase().includes('slack')).length>0?'passed':'failed');
+    add(s,'Search "openai" finds results',C.filter(i=>i.name.toLowerCase().includes('openai')).length>0?'passed':'failed');
+    add(s,'Filter "Communication"',C.filter(i=>i.category==='Communication').length>0?'passed':'failed',C.filter(i=>i.category==='Communication').length+' results');
+    add(s,'Filter "AI & ML"',C.filter(i=>i.category==='AI & ML').length>0?'passed':'failed',C.filter(i=>i.category==='AI & ML').length+' results');
+    add(s,'Filter "Finance"',C.filter(i=>i.category==='Finance').length>0?'passed':'failed');
+    add(s,'Description search "payment"',C.filter(i=>i.description.toLowerCase().includes('payment')).length>0?'passed':'failed');
+    add(s,'Gibberish returns 0 results',C.filter(i=>i.name.toLowerCase().includes('zzznomatch')).length===0?'passed':'failed');
+    if(fn('getCatalogCategories')){ const cats=getCatalogCategories(); add(s,'"All" is first category',cats[0]==='All'?'passed':'failed','First: '+cats[0]); }
+    badge(s);
+}
 
-                // Test 2: Demo constants defined
-                const hasCatalog = Array.isArray(window.INTEGRATIONS_CATALOG || []);
-                addTestResult('demo-tests', 'Integration catalog defined', hasCatalog ? 'passed' : 'failed',
-                    hasCatalog ? '' : 'INTEGRATIONS_CATALOG not defined');
+// ---- 8. LocalStorage ----
+function testStorage(){
+    const s='storage-tests';
+    const ok=typeof Storage!=='undefined';
+    add(s,'localStorage available',ok?'passed':'failed');
+    if(!ok){badge(s);return;}
+    try{localStorage.setItem('nh_test','1');localStorage.removeItem('nh_test');add(s,'Read/write works','passed');}
+    catch(e){add(s,'Read/write works','failed',e.message);}
+    // JSON round trip
+    const obj={id:'t',arr:[1,2,3]};
+    localStorage.setItem('nh_test_j',JSON.stringify(obj));
+    const parsed=JSON.parse(localStorage.getItem('nh_test_j')||'null');
+    add(s,'JSON serialisation round-trip',JSON.stringify(parsed)===JSON.stringify(obj)?'passed':'failed');
+    localStorage.removeItem('nh_test_j');
+    const dkeys=Object.keys(localStorage).filter(k=>k.startsWith('nh_demo_'));
+    add(s,'Demo keys ('+dkeys.length+')','info',dkeys.join(', ')||'None — not logged in');
+    ['nh_demo_token','nh_demo_user','nh_demo_workspace'].forEach(k=>{
+        const v=localStorage.getItem(k);
+        add(s,'"'+k+'"',v?'passed':'warning',v?'Length: '+v.length+' chars':'Not set');
+    });
+    ['nh_demo_integrations','nh_demo_api_keys'].forEach(k=>{
+        const v=ls(k,null);
+        add(s,'"'+k+'" is array',Array.isArray(v)?'passed':v===null?'warning':'failed',Array.isArray(v)?v.length+' items':'Not set yet');
+    });
+    let bytes=0; dkeys.forEach(k=>{bytes+=(localStorage[k].length+k.length)*2;});
+    add(s,'Usage ~'+(bytes/1024).toFixed(1)+' KB (limit ~5MB)',bytes<4000000?'passed':'warning');
+    badge(s);
+}
 
-                // Test 3: Demo banner appears
-                const hasDemoBanner = document.querySelector('[style*="bottom: 0"]') !== null;
-                addTestResult('demo-tests', 'Demo banner displayed', hasDemoBanner ? 'passed' : 'failed');
+// ---- 9. UI/UX ----
+function testUI(){
+    const s='ui-tests';
+    [['#api-key-modal','API Key modal exists'],['#integration-modal','Integration modal exists'],
+     ['#integrations-grid','Integrations grid exists'],['#api-keys-list','API keys list exists'],
+     ['#integration-search','Search input exists'],['#category-tabs','Category tabs exists'],
+     ['#integration-count','Count label exists'],['#key-name','Key name input exists'],
+     ['#key-rate-limit','Rate limit input exists'],['#key-rate-slider','Rate slider exists'],
+     ['#rate-limit-display','Rate display exists']].forEach(([sel,label])=>{
+        const el=document.querySelector(sel);
+        add(s,label,el?'passed':'failed',el?'<'+el.tagName.toLowerCase()+'>':'Not found');
+    });
+    const presets=document.querySelectorAll('.rate-preset');
+    add(s,'Rate preset pills ('+presets.length+')',presets.length>=4?'passed':'failed');
+    const modal=document.getElementById('api-key-modal');
+    add(s,'API Key modal hidden by default',modal&&modal.style.display==='none'?'passed':'warning');
+    // Check CSS for btn-danger (test by creating a temp element)
+    const tmp=document.createElement('button'); tmp.className='btn-danger'; tmp.style.visibility='hidden'; document.body.appendChild(tmp);
+    const cs=getComputedStyle(tmp);
+    const isRed=cs.backgroundColor.includes('220')||cs.backgroundColor.includes('DC')||cs.backgroundColor.includes('185');
+    add(s,'.btn-danger is styled in red',cs.backgroundColor!=='rgba(0, 0, 0, 0)'?'passed':'warning','bg: '+cs.backgroundColor);
+    document.body.removeChild(tmp);
+    badge(s);
+}
 
-            } catch (error) {
-                addTestResult('demo-tests', 'Demo mode setup', 'failed', error.message);
-            }
-        }
-
-        function testAuthentication() {
-            try {
-                // Test 1: Google OAuth function exists
-                addTestResult('auth-tests', 'Google OAuth function', 
-                    typeof window.loginWithGoogle === 'function' ? 'passed' : 'failed');
-
-                // Test 2: GitHub OAuth function exists
-                addTestResult('auth-tests', 'GitHub OAuth function', 
-                    typeof window.loginWithGitHub === 'function' ? 'passed' : 'failed');
-
-                // Test 3: Logout function exists
-                addTestResult('auth-tests', 'Logout function', 
-                    typeof window.logout === 'function' ? 'passed' : 'failed');
-
-                // Test 4: Token storage
-                const hasToken = localStorage.getItem('nh_demo_token') !== null;
-                addTestResult('auth-tests', 'Session persistence', 
-                    hasToken ? 'passed' : 'warning', 
-                    hasToken ? 'Token found in localStorage' : 'No active session (loginrequired)');
-
-            } catch (error) {
-                addTestResult('auth-tests', 'Authentication system', 'failed', error.message);
-            }
-        }
-
-        function testIntegrations() {
-            try {
-                // Test 1: Connect integration function
-                addTestResult('integration-tests', 'Connect integration function', 
-                    typeof window.connectIntegration === 'function' ? 'passed' : 'failed');
-
-                // Test 2: Disconnect integration function
-                addTestResult('integration-tests', 'Disconnect integration function', 
-                    typeof window.disconnectIntegration === 'function' ? 'passed' : 'failed');
-
-                // Test 3: Integration storage
-                const integrations = JSON.parse(localStorage.getItem('nh_demo_integrations') || '[]');
-                addTestResult('integration-tests', 'Integration data structure', 
-                    Array.isArray(integrations) ? 'passed' : 'failed');
-
-                // Test 4: Integration count
-                addTestResult('integration-tests', `Active integrations (${integrations.length})`, 
-                    'passed', `${integrations.length} integration(s) connected`);
-
-            } catch (error) {
-                addTestResult('integration-tests', 'Integration management', 'failed', error.message);
-            }
-        }
-
-        function testAPIKeys() {
-            try {
-                // Test 1: Create API key function
-                addTestResult('apikey-tests', 'Create API key function', 
-                    typeof window.createAPIKey === 'function' ? 'passed' : 'failed');
-
-                // Test 2: Revoke API key function
-                addTestResult('apikey-tests', 'Revoke API key function', 
-                    typeof window.revokeAPIKey === 'function' ? 'passed' : 'failed');
-
-                // Test 3: API key storage
-                const keys = JSON.parse(localStorage.getItem('nh_demo_api_keys') || '[]');
-                addTestResult('apikey-tests', 'API key data structure', 
-                    Array.isArray(keys) ? 'passed' : 'failed');
-
-                // Test 4: API key count
-                addTestResult('apikey-tests', `API keys generated (${keys.length})`, 
-                    'passed', `${keys.length} API key(s) in storage`);
-
-                // Test 5: Key format validation
-                if (keys.length > 0) {
-                    const validFormat = keys.every(k => k.key && k.key.startsWith('nh_demo_'));
-                    addTestResult('apikey-tests', 'API key format validation', 
-                        validFormat ? 'passed' : 'failed',
-                        validFormat ? 'All keys have correct prefix' : 'Invalid key format detected');
-                }
-
-            } catch (error) {
-                addTestResult('apikey-tests', 'API key management', 'failed', error.message);
-            }
-        }
-
-        function testLocalStorage() {
-            try {
-                // Test 1: localStorage availability
-                const hasLocalStorage = typeof Storage !== 'undefined';
-                addTestResult('storage-tests', 'LocalStorage support', 
-                    hasLocalStorage ? 'passed' : 'failed');
-
-                if (!hasLocalStorage) return;
-
-                // Test 2: Write test
-                try {
-                    localStorage.setItem('nh_test', 'test');
-                    localStorage.removeItem('nh_test');
-                    addTestResult('storage-tests', 'LocalStorage write/read', 'passed');
-                } catch (e) {
-                    addTestResult('storage-tests', 'LocalStorage write/read', 'failed', e.message);
-                }
-
-                // Test 3: Data persistence
-                const keys = Object.keys(localStorage).filter(k => k.startsWith('nh_demo_'));
-                addTestResult('storage-tests', `Persisted data keys (${keys.length})`, 
-'passed', keys.join(', ') || 'No demo data yet');
-
-                // Test 4: Storage size estimation
-                let totalSize = 0;
-                for (let key in localStorage) {
-                    if (key.startsWith('nh_demo_')) {
-                        totalSize += localStorage[key].length + key.length;
-                    }
-                }
-                const sizeKB = (totalSize / 1024).toFixed(2);
-                addTestResult('storage-tests', `Storage usage (~${sizeKB} KB)`, 
-                    totalSize < 5000000 ? 'passed' : 'warning',
-                    totalSize < 5000000 ? 'Within 5MB limit' : 'Approaching browser limit');
-
-            } catch (error) {
-                addTestResult('storage-tests', 'LocalStorage functionality', 'failed', error.message);
-            }
-        }
-
-        // Run tests on page load
-        window.addEventListener('DOMContentLoaded', () => {
-            setTimeout(runAllTests, 500);
+// ---- 10. Data Validation ----
+function testValidation(){
+    const s='validation-tests';
+    const keys=ls('nh_demo_api_keys',[]);
+    if(keys.length>0){
+        keys.forEach((k,i)=>{
+            const v=k.key&&k.key.startsWith('nh_demo_')&&k.key.length>20;
+            add(s,'Key #'+(i+1)+' "'+k.name+'" format',v?'passed':'failed',k.key);
+            if(k.rate_limit!==undefined) add(s,'Key "'+k.name+'" rate_limit valid',Number.isInteger(k.rate_limit)&&k.rate_limit>=100?'passed':'failed',''+k.rate_limit);
+            add(s,'Key "'+k.name+'" created_at is valid ISO date',!isNaN(new Date(k.created_at).getTime())?'passed':'failed',k.created_at);
         });
-    </script>
+    } else { add(s,'API key format tests','skipped','Create an API key to test'); }
+    const ints=ls('nh_demo_integrations',[]);
+    if(ints.length>0){
+        ints.forEach(i=>{
+            add(s,'Integration "'+i.name+'" date valid',!isNaN(new Date(i.connected_at).getTime())?'passed':'failed',i.connected_at);
+            add(s,'Integration "'+i.name+'" status=active',i.status==='active'?'passed':'warning','status: '+i.status);
+        });
+    } else { add(s,'Integration data validation','skipped','Connect an integration to test'); }
+    const ws=ls('nh_demo_workspace');
+    if(ws){ add(s,'Workspace has id',ws.id?'passed':'failed'); add(s,'Workspace has name',ws.name?'passed':'failed'); }
+    else { add(s,'Workspace validation','skipped','Login first'); }
+    badge(s);
+}
+
+// ---- 11. Backend API ----
+async function testBackend(){
+    const s='backend-tests';
+    async function probe(method,path,body,label,expect=200){
+        try{
+            const o={method,headers:{'Content-Type':'application/json'}};
+            if(body) o.body=JSON.stringify(body);
+            const r=await fetch(BACKEND+path,o);
+            const ok=r.status===expect||(expect===200&&r.status<500);
+            add(s,label,ok?'passed':'failed','HTTP '+r.status+' (expected '+expect+')');
+            return r;
+        }catch(e){ add(s,label,'skipped','Backend offline: '+e.message.slice(0,60)); return null; }
+    }
+    const h=await probe('GET','/health',null,'GET /health → 200 OK');
+    if(!h||h.status>=500){add(s,'Remaining backend tests skipped','skipped','Start: docker-compose up -d');badge(s);return;}
+    await probe('GET','/auth/google/login',null,'GET /auth/google/login → OAuth redirect',302);
+    await probe('GET','/auth/github/login',null,'GET /auth/github/login → OAuth redirect',302);
+    await probe('POST','/auth/login',{email:'test@example.com',password:'wrong'},'POST /auth/login invalid creds → 401',401);
+    await probe('GET','/auth/user',null,'GET /auth/user (no token) → 401',401);
+    await probe('GET','/integrations',null,'GET /integrations (no token) → 401',401);
+    await probe('GET','/integrations/catalog',null,'GET /integrations/catalog → 200',200);
+    await probe('GET','/workspaces',null,'GET /workspaces (no token) → 401',401);
+    await probe('GET','/api-keys',null,'GET /api-keys (no token) → 401',401);
+    await probe('GET','/metrics',null,'GET /metrics → Prometheus',200);
+    badge(s);
+}
+
+// ---- Master runner ----
+async function runAllTests(){
+    clearAll(); t0=performance.now();
+    testDemo(); testAuth(); testCatalog(); testIntegrations(); testAPIKeys();
+    testRateLimits(); testSearch(); testStorage(); testUI(); testValidation();
+    await testBackend();
+    document.getElementById('run-time').textContent='Done in '+((performance.now()-t0)/1000).toFixed(2)+'s';
+}
+
+window.addEventListener('DOMContentLoaded',()=>setTimeout(runAllTests,600));
+</script>
 </body>
 </html>

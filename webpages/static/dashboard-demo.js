@@ -494,14 +494,9 @@ async function loadAPIKeys() {
                         Created: ${new Date(key.created_at).toLocaleDateString()}
                     </div>
                 </div>
-                <div>
-                    <button class="btn-sm btn-secondary" onclick="copyToClipboard('${key.key}')">
-                        Copy
-                    </button>
-                    <button class="btn-sm" style="background: var(--error); color: white; margin-left: 0.5rem;" 
-                            onclick="revokeAPIKey('${key.id}')">
-                        Revoke
-                    </button>
+                <div style="display:flex;gap:0.5rem;align-items:center;flex-shrink:0;">
+                    <button class="btn-sm btn-secondary" onclick="copyToClipboard('${key.key}')">Copy</button>
+                    <button class="btn-sm btn-danger" onclick="revokeAPIKey('${key.id}')">Revoke</button>
                 </div>
             </div>
         </div>
@@ -509,6 +504,34 @@ async function loadAPIKeys() {
 }
 
 // Create API Key
+// Rate Limit Helpers
+window.setRateLimit = (value) => {
+    document.getElementById('key-rate-limit').value = value;
+    const slider = document.getElementById('key-rate-slider');
+    if (slider) slider.value = Math.min(value, 100000);
+    updateRateLimitDisplay(value);
+    document.querySelectorAll('.rate-preset').forEach(btn => {
+        const btnVal = parseInt(btn.getAttribute('onclick').match(/\d+/)[0]);
+        btn.classList.toggle('selected', btnVal === value);
+    });
+};
+
+window.syncRateLimit = (value, source) => {
+    const num = parseInt(value);
+    document.getElementById('key-rate-limit').value = num;
+    if (source === 'slider') updateRateLimitDisplay(num);
+    document.querySelectorAll('.rate-preset').forEach(btn => {
+        const btnVal = parseInt(btn.getAttribute('onclick').match(/\d+/)[0]);
+        btn.classList.toggle('selected', btnVal === num);
+    });
+};
+
+function updateRateLimitDisplay(value) {
+    const el = document.getElementById('rate-limit-display');
+    if (!el) return;
+    el.textContent = value >= 100000 ? 'Unlimited' : Number(value).toLocaleString() + ' req/hr';
+}
+
 window.showCreateAPIKeyModal = () => {
     const modal = document.getElementById('api-key-modal');
     if (modal) modal.style.display = 'flex';
