@@ -553,6 +553,32 @@ tr:hover {
     font-size: 0.875rem;
 }
 
+/* Category Filter Tabs */
+.cat-tab {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 2rem;
+    padding: 0.35rem 1rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+
+.cat-tab:hover {
+    border-color: var(--purple-500);
+    color: var(--purple-600);
+    background: var(--purple-50);
+}
+
+.cat-tab.active {
+    background: var(--purple-600);
+    border-color: var(--purple-600);
+    color: #fff;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .container {

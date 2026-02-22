@@ -125,10 +125,12 @@
                 <div class="card-header">
                     <div>
                         <h3 class="card-title">Available Integrations</h3>
-                        <p class="text-secondary text-sm">Connect to 100+ platforms</p>
+                        <p class="text-secondary text-sm" id="integration-count">Loading platforms...</p>
                     </div>
-                    <input type="text" id="integration-search" placeholder="Search integrations..." style="width: 300px; margin-bottom: 0;">
+                    <input type="text" id="integration-search" placeholder="Search integrations..." oninput="searchIntegrations(this.value)" style="width: 300px; margin-bottom: 0;">
                 </div>
+                <!-- Category filter tabs -->
+                <div id="category-tabs" style="display:flex;flex-wrap:wrap;gap:0.5rem;padding:0.75rem 0 1rem 0;border-bottom:1px solid #E5E7EB;margin-bottom:1.25rem;"></div>
                 <div class="grid" id="integrations-grid">
                     <!-- Dynamically populated -->
                 </div>
