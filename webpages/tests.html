@@ -43,7 +43,13 @@
         .backend-note { background:#EFF6FF; border:1px solid #BFDBFE; border-radius:.5rem; padding:.75rem 1rem; margin-bottom:1rem; font-size:.85rem; color:#1E40AF; }
         pre { background:#1E293B; color:#E2E8F0; padding:1rem; border-radius:.5rem; font-size:.82rem; overflow-x:auto; line-height:1.6; margin:.5rem 0; }
         .progress-bar-wrap { background:#E5E7EB; border-radius:999px; height:6px; overflow:hidden; }
-        .progress-bar { height:100%; background:linear-gradient(90deg,#7C3AED,#A855F7); border-radius:999px; transition:width .4s ease; }
+        .progress-bar { height:100%; width:0%; background:linear-gradient(90deg,#7C3AED,#A855F7); border-radius:999px; transition:width .4s ease; }
+        .run-time { margin-left:auto; font-size:.85rem; color:#9CA3AF; }
+        .value--success { color:var(--success); }
+        .value--error { color:var(--error); }
+        .value--warning { color:var(--warning); }
+        .value--info { color:var(--info); }
+        .badge-default { background:#F3F4F6; color:#374151; }
 
         /* ---- Responsive ---- */
         @media (max-width: 768px) {
@@ -149,30 +155,30 @@
         <span class="toggle-label-dark">Dark</span>
         <span class="toggle-label-light">Light</span>
     </button>
-    <span id="run-time" style="margin-left:auto;font-size:.85rem;color:#9CA3AF;"></span>
+    <span id="run-time" class="run-time"></span>
 </div>
 
 <div class="summary">
     <div class="summary-card"><div class="value" id="total-tests">0</div><div class="label">Total</div></div>
-    <div class="summary-card"><div class="value" style="color:var(--success)" id="passed-tests">0</div><div class="label">Passed</div></div>
-    <div class="summary-card"><div class="value" style="color:var(--error)" id="failed-tests">0</div><div class="label">Failed</div></div>
-    <div class="summary-card"><div class="value" style="color:var(--warning)" id="warning-tests">0</div><div class="label">Warnings</div></div>
-    <div class="summary-card"><div class="value" style="color:var(--info)" id="skipped-tests">0</div><div class="label">Skipped</div></div>
+    <div class="summary-card"><div class="value value--success" id="passed-tests">0</div><div class="label">Passed</div></div>
+    <div class="summary-card"><div class="value value--error" id="failed-tests">0</div><div class="label">Failed</div></div>
+    <div class="summary-card"><div class="value value--warning" id="warning-tests">0</div><div class="label">Warnings</div></div>
+    <div class="summary-card"><div class="value value--info" id="skipped-tests">0</div><div class="label">Skipped</div></div>
 </div>
-<div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div><br>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar"></div></div><br>
 
-<div class="test-section"><div class="test-header"><h2>1. Demo Mode</h2><span class="section-badge" id="badge-demo-tests" style="background:#F3F4F6;color:#374151;">-</span></div><div id="demo-tests"></div></div>
-<div class="test-section"><div class="test-header"><h2>2. Authentication</h2><span class="section-badge" id="badge-auth-tests" style="background:#F3F4F6;color:#374151;">-</span></div><div id="auth-tests"></div></div>
-<div class="test-section"><div class="test-header"><h2>3. Integration Catalog (148+ platforms)</h2><span class="section-badge" id="badge-catalog-tests" style="background:#F3F4F6;color:#374151;">-</span></div><div id="catalog-tests"></div></div>
-<div class="test-section"><div class="test-header"><h2>4. Integration Management</h2><span class="section-badge" id="badge-integration-tests" style="background:#F3F4F6;color:#374151;">-</span></div><div id="integration-tests"></div></div>
-<div class="test-section"><div class="test-header"><h2>5. API Key Management</h2><span class="section-badge" id="badge-apikey-tests" style="background:#F3F4F6;color:#374151;">-</span></div><div id="apikey-tests"></div></div>
-<div class="test-section"><div class="test-header"><h2>6. Rate Limit Controls</h2><span class="section-badge" id="badge-ratelimit-tests" style="background:#F3F4F6;color:#374151;">-</span></div><div id="ratelimit-tests"></div></div>
-<div class="test-section"><div class="test-header"><h2>7. Search &amp; Category Filter</h2><span class="section-badge" id="badge-search-tests" style="background:#F3F4F6;color:#374151;">-</span></div><div id="search-tests"></div></div>
-<div class="test-section"><div class="test-header"><h2>8. LocalStorage Persistence</h2><span class="section-badge" id="badge-storage-tests" style="background:#F3F4F6;color:#374151;">-</span></div><div id="storage-tests"></div></div>
-<div class="test-section"><div class="test-header"><h2>9. UI / UX Elements</h2><span class="section-badge" id="badge-ui-tests" style="background:#F3F4F6;color:#374151;">-</span></div><div id="ui-tests"></div></div>
-<div class="test-section"><div class="test-header"><h2>10. Data Validation</h2><span class="section-badge" id="badge-validation-tests" style="background:#F3F4F6;color:#374151;">-</span></div><div id="validation-tests"></div></div>
+<div class="test-section"><div class="test-header"><h2>1. Demo Mode</h2><span class="section-badge badge-default" id="badge-demo-tests">-</span></div><div id="demo-tests"></div></div>
+<div class="test-section"><div class="test-header"><h2>2. Authentication</h2><span class="section-badge badge-default" id="badge-auth-tests">-</span></div><div id="auth-tests"></div></div>
+<div class="test-section"><div class="test-header"><h2>3. Integration Catalog (148+ platforms)</h2><span class="section-badge badge-default" id="badge-catalog-tests">-</span></div><div id="catalog-tests"></div></div>
+<div class="test-section"><div class="test-header"><h2>4. Integration Management</h2><span class="section-badge badge-default" id="badge-integration-tests">-</span></div><div id="integration-tests"></div></div>
+<div class="test-section"><div class="test-header"><h2>5. API Key Management</h2><span class="section-badge badge-default" id="badge-apikey-tests">-</span></div><div id="apikey-tests"></div></div>
+<div class="test-section"><div class="test-header"><h2>6. Rate Limit Controls</h2><span class="section-badge badge-default" id="badge-ratelimit-tests">-</span></div><div id="ratelimit-tests"></div></div>
+<div class="test-section"><div class="test-header"><h2>7. Search &amp; Category Filter</h2><span class="section-badge badge-default" id="badge-search-tests">-</span></div><div id="search-tests"></div></div>
+<div class="test-section"><div class="test-header"><h2>8. LocalStorage Persistence</h2><span class="section-badge badge-default" id="badge-storage-tests">-</span></div><div id="storage-tests"></div></div>
+<div class="test-section"><div class="test-header"><h2>9. UI / UX Elements</h2><span class="section-badge badge-default" id="badge-ui-tests">-</span></div><div id="ui-tests"></div></div>
+<div class="test-section"><div class="test-header"><h2>10. Data Validation</h2><span class="section-badge badge-default" id="badge-validation-tests">-</span></div><div id="validation-tests"></div></div>
 <div class="test-section backend-section">
-    <div class="test-header"><h2>11. Backend API Tests (requires running backend)</h2><span class="section-badge" id="badge-backend-tests" style="background:#F3F4F6;color:#374151;">-</span></div>
+    <div class="test-header"><h2>11. Backend API Tests (requires running backend)</h2><span class="section-badge badge-default" id="badge-backend-tests">-</span></div>
     <div class="backend-note">
         These tests are <strong>skipped in demo mode</strong>. To run them, start the backend first:
         <pre>cp .env.example .env   # fill in secrets (DB_PASSWORD, JWT_SECRET, OAuth keys)
@@ -435,7 +441,7 @@ function testUI(){
     const presets=document.querySelectorAll('.rate-preset');
     add(s,'Rate preset pills ('+presets.length+')',presets.length>=4?'passed':'failed');
     const modal=document.getElementById('api-key-modal');
-    add(s,'API Key modal hidden by default',modal&&modal.style.display==='none'?'passed':'warning');
+    add(s,'API Key modal hidden by default',modal&&modal.classList.contains('is-hidden')?'passed':'warning');
     // Check CSS for btn-danger (test by creating a temp element)
     const tmp=document.createElement('button'); tmp.className='btn-danger'; tmp.style.visibility='hidden'; document.body.appendChild(tmp);
     const cs=getComputedStyle(tmp);

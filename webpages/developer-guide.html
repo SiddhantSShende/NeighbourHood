@@ -190,6 +190,12 @@
         [data-theme="dark"] .breadcrumb {
             color: var(--text-secondary);
         }
+
+        /* Guide page hero & CTA */
+        .guide-hero-title { font-size: 3rem; margin-bottom: 1rem; color: var(--text-primary); }
+        .guide-hero-subtitle { font-size: 1.25rem; color: var(--text-secondary); margin-bottom: 3rem; }
+        .guide-cta { text-align: center; padding: 3rem 0; }
+        .guide-cta__title { margin-bottom: 1rem; }
     </style>
     <!-- Theme: load before body paint to prevent flash -->
     <script src="./static/theme.js"></script>
@@ -243,10 +249,10 @@
             <a href="./index.html">Home</a> / Developer Guide
         </div>
 
-        <h1 style="font-size: 3rem; margin-bottom: 1rem; color: var(--text-primary);">
+        <h1 class="guide-hero-title">
             Developer <span class="gradient-text">Guide</span>
         </h1>
-        <p style="font-size: 1.25rem; color: var(--text-secondary); margin-bottom: 3rem;">
+        <p class="guide-hero-subtitle">
             Everything you need to integrate NeighbourHood into your application
         </p>
 
@@ -612,8 +618,8 @@ nh.clearAll();</code></pre>
             </ul>
         </div>
 
-        <div style="text-align: center; padding: 3rem 0;">
-            <h2 style="margin-bottom: 1rem;">Ready to get started?</h2>
+        <div class="guide-cta">
+            <h2 class="guide-cta__title">Ready to get started?</h2>
             <a href="./dashboard.html" class="btn-primary btn-large">Launch Dashboard</a>
         </div>
     </div><!-- /.guide-container -->

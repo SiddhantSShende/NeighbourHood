@@ -279,8 +279,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function loadDashboard() {
-        loginView.style.display = 'none';
-        dashboardView.style.display = 'block';
+        loginView.classList.add('is-hidden');
+        dashboardView.classList.remove('is-hidden');
         
         authNav.innerHTML = `
             <span style="margin-right: 1rem; color: var(--text-secondary);">${escHtml(currentUser.email)}</span>
@@ -534,18 +534,18 @@ function updateRateLimitDisplay(value) {
 
 window.showCreateAPIKeyModal = () => {
     const modal = document.getElementById('api-key-modal');
-    if (modal) modal.style.display = 'flex';
+    if (modal) modal.classList.remove('is-hidden');
 };
 
 window.closeAPIKeyModal = () => {
     const modal = document.getElementById('api-key-modal');
-    if (modal) modal.style.display = 'none';
+    if (modal) modal.classList.add('is-hidden');
 };
 
 /** Close the integration connect/scope modal. */
 window.closeIntegrationModal = () => {
     const modal = document.getElementById('integration-modal');
-    if (modal) modal.style.display = 'none';
+    if (modal) modal.classList.add('is-hidden');
 };
 
 /**
@@ -595,7 +595,7 @@ window.showIntegrationModal = (type) => {
         }, { once: true });
     }
 
-    modal.style.display = 'flex';
+    modal.classList.remove('is-hidden');
 };
 
 // Close modals when clicking the backdrop outside the modal-content box

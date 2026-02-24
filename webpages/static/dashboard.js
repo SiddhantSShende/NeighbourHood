@@ -475,15 +475,15 @@ function displayActiveIntegrations(integrations) {
 
 // API Key Management
 window.showCreateAPIKeyModal = () => {
-    document.getElementById('api-key-modal').style.display = 'flex';
+    document.getElementById('api-key-modal').classList.remove('is-hidden');
     
     document.getElementById('key-expiry-enabled').addEventListener('change', (e) => {
-        document.getElementById('key-expiry-date').style.display = e.target.checked ? 'block' : 'none';
+        document.getElementById('key-expiry-date').classList.toggle('is-hidden', !e.target.checked);
     });
 };
 
 window.closeAPIKeyModal = () => {
-    document.getElementById('api-key-modal').style.display = 'none';
+    document.getElementById('api-key-modal').classList.add('is-hidden');
     document.getElementById('create-api-key-form').reset();
 };
 

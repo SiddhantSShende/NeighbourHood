@@ -134,8 +134,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showDashboard() {
-        if (loginView)     loginView.style.display     = 'none';
-        if (dashboardView) dashboardView.style.display = 'block';
+        if (loginView)     loginView.classList.add('is-hidden');
+        if (dashboardView) dashboardView.classList.remove('is-hidden');
         if (authNav) {
             authNav.innerHTML = '<button class="btn-secondary btn-sm" onclick="logout()">Sign Out</button>';
         }

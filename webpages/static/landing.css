@@ -1141,3 +1141,6 @@ html { transition: background-color 0.3s ease, color 0.3s ease; }
 [data-theme="dark"] .footer-bottom {
     border-top-color: var(--border-light);
 }
+
+/* Inline-style elimination */
+.integrations-cta { text-align: center; margin-top: 3rem; }

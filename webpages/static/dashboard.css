@@ -662,6 +662,18 @@ tr:hover {
 }
 
 /* ============================================================
+   Category tabs — base layout (responsive overrides below)
+   ============================================================ */
+#category-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.75rem 0 1rem;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 1.25rem;
+}
+
+/* ============================================================
    Responsive — Large Tablet / Small Desktop  (≤ 1024 px)
    ============================================================ */
 @media (max-width: 1024px) {
@@ -815,6 +827,7 @@ tr:hover {
         overflow-x: auto;
         padding-bottom: 0.5rem;
         scrollbar-width: none;
+        -ms-overflow-style: none; /* IE/Edge */
     }
 
     #category-tabs::-webkit-scrollbar {
@@ -1248,3 +1261,49 @@ html { transition: background-color 0.3s ease, color 0.3s ease; }
     color: var(--purple-700);
     background: var(--purple-50);
 }
+
+/* ================================================================
+   Inline-style elimination — utility & layout classes
+   ================================================================ */
+
+/* Visibility */
+.is-hidden { display: none !important; }
+
+/* Header / logo */
+.logo-link { display: flex; align-items: center; text-decoration: none; color: inherit; }
+.header-controls { display: flex; align-items: center; gap: 0.75rem; }
+
+/* Login card */
+.login-card { max-width: 480px; margin: 4rem auto; }
+.login-header { text-align: center; margin-bottom: 2rem; }
+.login-title { font-size: 1.875rem; margin-bottom: 0.5rem; }
+.sso-group { margin-bottom: 1.5rem; }
+.btn-sso { width: 100%; justify-content: center; }
+.btn-sso--google { margin-bottom: 0.75rem; }
+.btn-sso--github { background: #24292e; color: #fff; }
+
+/* Divider */
+.auth-divider { text-align: center; margin: 1.5rem 0; color: var(--text-tertiary); position: relative; }
+.auth-divider__text { background: var(--bg-card); padding: 0 1rem; position: relative; z-index: 1; }
+.auth-divider__line { position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: var(--border-color); z-index: 0; }
+
+/* Form helpers */
+.btn-full { width: 100%; margin-top: 0.5rem; }
+.form-note { text-align: center; margin-top: 1rem; color: var(--text-secondary); font-size: 0.875rem; }
+.link-accent { color: var(--purple-700); text-decoration: none; font-weight: 600; }
+
+/* Dashboard layout helpers */
+.selector-compact { width: auto; padding: 0.5rem 1rem; }
+.api-key-note { margin-top: 0.75rem; }
+.search-input { width: 300px; margin-bottom: 0; }
+.integration-empty { text-align: center; padding: 2rem; }
+
+/* Rate limit form */
+.rate-label { display: flex; justify-content: space-between; align-items: center; }
+.rate-display { font-weight: 700; color: var(--purple-700); font-size: 0.95rem; }
+.rate-muted { font-weight: 400; opacity: .75; }
+.rate-hint { font-size: 0.78rem; color: var(--text-tertiary); margin-top: -0.25rem; margin-bottom: 1rem; }
+
+/* Modal helpers */
+.modal-actions { margin-top: 1.5rem; }
+.btn-flex-fill { flex: 1; }
