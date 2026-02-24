@@ -783,7 +783,6 @@ tr:hover {
     table {
         display: block;
         overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
         width: 100%;
     }
 
@@ -814,7 +813,6 @@ tr:hover {
     #category-tabs {
         flex-wrap: nowrap !important;
         overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
         padding-bottom: 0.5rem;
         scrollbar-width: none;
     }

@@ -209,7 +209,7 @@ func (p *GmailProvider) Execute(ctx context.Context, token *Token, action string
 	}
 }
 
-func (p *GmailProvider) sendEmail(ctx context.Context, token *Token, params map[string]interface{}) (interface{}, error) {
+func (p *GmailProvider) sendEmail(_ context.Context, _ *Token, _ map[string]interface{}) (interface{}, error) {
 	// Simplified email sending - production would use proper Gmail API
 	return map[string]interface{}{"status": "sent"}, nil
 }
@@ -304,12 +304,12 @@ func (p *JiraProvider) Execute(ctx context.Context, token *Token, action string,
 	}
 }
 
-func (p *JiraProvider) createIssue(ctx context.Context, token *Token, params map[string]interface{}) (interface{}, error) {
+func (p *JiraProvider) createIssue(_ context.Context, _ *Token, _ map[string]interface{}) (interface{}, error) {
 	// Simplified - production would use proper Jira API
 	return map[string]interface{}{"status": "created"}, nil
 }
 
-func (p *JiraProvider) listIssues(ctx context.Context, token *Token) (interface{}, error) {
+func (p *JiraProvider) listIssues(_ context.Context, _ *Token) (interface{}, error) {
 	// Simplified - production would use proper Jira API
 	return map[string]interface{}{"issues": []interface{}{}}, nil
 }

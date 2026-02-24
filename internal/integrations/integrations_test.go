@@ -92,7 +92,7 @@ func TestIntegrationTypeDistinct(t *testing.T) {
 }
 
 func TestToken_Fields(t *testing.T) {
-	tok := &Token{AccessToken: "a", RefreshToken: "r", TokenType: "bearer", ExpiresAt: time.Now().Add(time.Hour)}
+	tok := &Token{AccessToken: "a", RefreshToken: "r"}
 	if tok.AccessToken == "" {
 		t.Error("AccessToken empty")
 	}
