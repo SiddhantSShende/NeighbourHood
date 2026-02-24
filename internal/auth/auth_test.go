@@ -217,7 +217,7 @@ func TestValidateState_ExpiredState(t *testing.T) {
 	state, _ := h.generateState()
 
 	// Manually expire the state
-	h.states[state] = time.Now().Add(-1 * time.Hour)
+	h.states[state] = stateEntry{expiresAt: time.Now().Add(-1 * time.Hour)}
 
 	if h.validateState(state) {
 		t.Error("expired state should fail validation")
@@ -227,7 +227,7 @@ func TestValidateState_ExpiredState(t *testing.T) {
 func TestValidateState_CleanupOnExpiry(t *testing.T) {
 	h := NewOAuthHandler(newTestConfig(true, true))
 	state, _ := h.generateState()
-	h.states[state] = time.Now().Add(-1 * time.Hour)
+	h.states[state] = stateEntry{expiresAt: time.Now().Add(-1 * time.Hour)}
 
 	h.validateState(state) // should delete expired entry
 
@@ -424,7 +424,10 @@ func TestGenerateJWT_ContainsEmail(t *testing.T) {
 		"email": "jane@example.com",
 		"name":  "Jane",
 	}
-	token := h.generateJWT(userInfo)
+	token, err := h.generateJWT(userInfo)
+	if err != nil {
+		t.Fatalf("generateJWT returned unexpected error: %v", err)
+	}
 	if token == "" {
 		t.Error("generateJWT should return non-empty token")
 	}
@@ -433,7 +436,10 @@ func TestGenerateJWT_ContainsEmail(t *testing.T) {
 func TestGenerateJWT_MissingEmail(t *testing.T) {
 	h := NewOAuthHandler(newTestConfig(true, true))
 	// email field absent
-	token := h.generateJWT(map[string]interface{}{"name": "NoEmail"})
+	token, err := h.generateJWT(map[string]interface{}{"name": "NoEmail"})
+	if err != nil {
+		t.Fatalf("generateJWT returned unexpected error: %v", err)
+	}
 	if token == "" {
 		t.Error("generateJWT should still return a token even without email")
 	}

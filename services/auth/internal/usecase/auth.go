@@ -160,18 +160,24 @@ func (uc *AuthUseCase) Login(ctx context.Context, email, password, userAgent, ip
 	// Get user
 	user, err := uc.userRepo.GetByEmail(email)
 	if err != nil {
-		uc.loginAttemptRepo.Record(email)
+		if recordErr := uc.loginAttemptRepo.Record(email); recordErr != nil {
+			uc.logger.Error("Failed to record login attempt", "error", recordErr)
+		}
 		return "", "", ErrInvalidCredentials
 	}
 
 	// Check password
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
-		uc.loginAttemptRepo.Record(email)
+		if recordErr := uc.loginAttemptRepo.Record(email); recordErr != nil {
+			uc.logger.Error("Failed to record login attempt", "error", recordErr)
+		}
 		return "", "", ErrInvalidCredentials
 	}
 
 	// Reset login attempts
-	uc.loginAttemptRepo.Reset(email)
+	if resetErr := uc.loginAttemptRepo.Reset(email); resetErr != nil {
+		uc.logger.Error("Failed to reset login attempts", "error", resetErr)
+	}
 
 	// Generate tokens
 	accessToken, refreshToken, err := uc.generateTokens(user.ID)
@@ -256,7 +262,9 @@ func (uc *AuthUseCase) RefreshToken(ctx context.Context, refreshToken string) (s
 	session.ExpiresAt = time.Now().Add(uc.jwtConfig.RefreshTokenExpiry)
 
 	// Delete old session and create new one
-	uc.sessionRepo.Delete(session.ID)
+	if delErr := uc.sessionRepo.Delete(session.ID); delErr != nil {
+		uc.logger.Error("Failed to delete old session", "error", delErr, "session_id", session.ID)
+	}
 	session.ID = uuid.New().String()
 	session.CreatedAt = time.Now()
 
@@ -367,7 +375,9 @@ func (uc *AuthUseCase) CompleteOAuth(ctx context.Context, provider, code, state 
 		oauthAccount.RefreshToken = token.RefreshToken
 		oauthAccount.ExpiresAt = token.Expiry
 		oauthAccount.UpdatedAt = time.Now()
-		uc.oauthRepo.UpdateOAuth(oauthAccount)
+		if updateErr := uc.oauthRepo.UpdateOAuth(oauthAccount); updateErr != nil {
+			uc.logger.Error("Failed to update OAuth token", "error", updateErr, "provider", provider)
+		}
 	}
 
 	// Generate JWT tokens

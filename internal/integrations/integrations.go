@@ -108,6 +108,21 @@ func GetProvider(t IntegrationType) (Provider, error) {
 	return p, nil
 }
 
+// getString safely extracts a required string value from a payload map.
+// It returns an error if the key is absent or the value is not a string,
+// preventing panics from unsafe type assertions in Execute methods.
+func getString(payload map[string]interface{}, key string) (string, error) {
+	val, ok := payload[key]
+	if !ok {
+		return "", fmt.Errorf("missing required field '%s'", key)
+	}
+	str, ok := val.(string)
+	if !ok {
+		return "", fmt.Errorf("field '%s' must be a string, got %T", key, val)
+	}
+	return str, nil
+}
+
 // Example: Slack provider implementation (expand for Gmail, Jira, etc.)
 type SlackProvider struct {
 	ClientID     string
@@ -277,8 +292,14 @@ func (p *MicrosoftTeamsProvider) ExchangeCode(ctx context.Context, code string) 
 }
 func (p *MicrosoftTeamsProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "send_message" {
-		channel := payload["channel"].(string)
-		msg := payload["message"].(string)
+		channel, err := getString(payload, "channel")
+		if err != nil {
+			return nil, err
+		}
+		msg, err := getString(payload, "message")
+		if err != nil {
+			return nil, err
+		}
 		return map[string]string{"status": "success", "message": fmt.Sprintf("Sent message '%s' to Teams channel %s", msg, channel)}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -304,7 +325,10 @@ func (p *ZoomProvider) ExchangeCode(ctx context.Context, code string) (*Token, e
 }
 func (p *ZoomProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "create_meeting" {
-		topic := payload["topic"].(string)
+		topic, err := getString(payload, "topic")
+		if err != nil {
+			return nil, err
+		}
 		return map[string]string{"status": "success", "meeting_url": "https://zoom.us/j/123456789", "topic": topic}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -330,8 +354,14 @@ func (p *DiscordProvider) ExchangeCode(ctx context.Context, code string) (*Token
 }
 func (p *DiscordProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "send_message" {
-		channel := payload["channel"].(string)
-		content := payload["content"].(string)
+		channel, err := getString(payload, "channel")
+		if err != nil {
+			return nil, err
+		}
+		content, err := getString(payload, "content")
+		if err != nil {
+			return nil, err
+		}
 		return map[string]string{"status": "success", "message": fmt.Sprintf("Sent message '%s' to Discord channel %s", content, channel)}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -359,8 +389,14 @@ func (p *SendGridProvider) ExchangeCode(ctx context.Context, code string) (*Toke
 }
 func (p *SendGridProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "send_email" {
-		to := payload["to"].(string)
-		subject := payload["subject"].(string)
+		to, err := getString(payload, "to")
+		if err != nil {
+			return nil, err
+		}
+		subject, err := getString(payload, "subject")
+		if err != nil {
+			return nil, err
+		}
 		return map[string]string{"status": "success", "message": fmt.Sprintf("Email sent via SendGrid to %s with subject '%s'", to, subject)}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -386,8 +422,14 @@ func (p *MailchimpProvider) ExchangeCode(ctx context.Context, code string) (*Tok
 }
 func (p *MailchimpProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "add_subscriber" {
-		email := payload["email"].(string)
-		listID := payload["list_id"].(string)
+		email, err := getString(payload, "email")
+		if err != nil {
+			return nil, err
+		}
+		listID, err := getString(payload, "list_id")
+		if err != nil {
+			return nil, err
+		}
 		return map[string]string{"status": "success", "message": fmt.Sprintf("Added %s to list %s", email, listID)}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -413,8 +455,14 @@ func (p *TwilioProvider) ExchangeCode(ctx context.Context, code string) (*Token,
 }
 func (p *TwilioProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "send_sms" {
-		to := payload["to"].(string)
-		body := payload["body"].(string)
+		to, err := getString(payload, "to")
+		if err != nil {
+			return nil, err
+		}
+		body, err := getString(payload, "body")
+		if err != nil {
+			return nil, err
+		}
 		return map[string]string{"status": "success", "message": fmt.Sprintf("SMS sent to %s: %s", to, body)}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -442,8 +490,14 @@ func (p *TrelloProvider) ExchangeCode(ctx context.Context, code string) (*Token,
 }
 func (p *TrelloProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "create_card" {
-		listID := payload["list_id"].(string)
-		name := payload["name"].(string)
+		listID, err := getString(payload, "list_id")
+		if err != nil {
+			return nil, err
+		}
+		name, err := getString(payload, "name")
+		if err != nil {
+			return nil, err
+		}
 		return map[string]string{"status": "success", "card_id": "abc123", "message": fmt.Sprintf("Created card '%s' in list %s", name, listID)}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -469,8 +523,14 @@ func (p *AsanaProvider) ExchangeCode(ctx context.Context, code string) (*Token, 
 }
 func (p *AsanaProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "create_task" {
-		project := payload["project"].(string)
-		name := payload["name"].(string)
+		project, err := getString(payload, "project")
+		if err != nil {
+			return nil, err
+		}
+		name, err := getString(payload, "name")
+		if err != nil {
+			return nil, err
+		}
 		return map[string]string{"status": "success", "task_gid": "1234567890", "message": fmt.Sprintf("Created task '%s' in project %s", name, project)}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -496,8 +556,14 @@ func (p *MondayProvider) ExchangeCode(ctx context.Context, code string) (*Token,
 }
 func (p *MondayProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "create_item" {
-		board := payload["board_id"].(string)
-		name := payload["name"].(string)
+		board, err := getString(payload, "board_id")
+		if err != nil {
+			return nil, err
+		}
+		name, err := getString(payload, "name")
+		if err != nil {
+			return nil, err
+		}
 		return map[string]string{"status": "success", "item_id": "123456", "message": fmt.Sprintf("Created item '%s' in board %s", name, board)}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -523,8 +589,14 @@ func (p *NotionProvider) ExchangeCode(ctx context.Context, code string) (*Token,
 }
 func (p *NotionProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "create_page" {
-		parent := payload["parent_id"].(string)
-		title := payload["title"].(string)
+		parent, err := getString(payload, "parent_id")
+		if err != nil {
+			return nil, err
+		}
+		title, err := getString(payload, "title")
+		if err != nil {
+			return nil, err
+		}
 		return map[string]string{"status": "success", "page_id": "abc-123", "message": fmt.Sprintf("Created page '%s' in %s", title, parent)}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -550,8 +622,14 @@ func (p *ClickUpProvider) ExchangeCode(ctx context.Context, code string) (*Token
 }
 func (p *ClickUpProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "create_task" {
-		listID := payload["list_id"].(string)
-		name := payload["name"].(string)
+		listID, err := getString(payload, "list_id")
+		if err != nil {
+			return nil, err
+		}
+		name, err := getString(payload, "name")
+		if err != nil {
+			return nil, err
+		}
 		return map[string]string{"status": "success", "task_id": "xyz789", "message": fmt.Sprintf("Created task '%s' in list %s", name, listID)}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -579,9 +657,18 @@ func (p *SalesforceProvider) ExchangeCode(ctx context.Context, code string) (*To
 }
 func (p *SalesforceProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "create_lead" {
-		firstName := payload["first_name"].(string)
-		lastName := payload["last_name"].(string)
-		company := payload["company"].(string)
+		firstName, err := getString(payload, "first_name")
+		if err != nil {
+			return nil, err
+		}
+		lastName, err := getString(payload, "last_name")
+		if err != nil {
+			return nil, err
+		}
+		company, err := getString(payload, "company")
+		if err != nil {
+			return nil, err
+		}
 		return map[string]string{"status": "success", "lead_id": "00Q123456", "message": fmt.Sprintf("Created lead for %s %s at %s", firstName, lastName, company)}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -607,8 +694,14 @@ func (p *HubSpotProvider) ExchangeCode(ctx context.Context, code string) (*Token
 }
 func (p *HubSpotProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "create_contact" {
-		email := payload["email"].(string)
-		firstName := payload["first_name"].(string)
+		email, err := getString(payload, "email")
+		if err != nil {
+			return nil, err
+		}
+		firstName, err := getString(payload, "first_name")
+		if err != nil {
+			return nil, err
+		}
 		return map[string]string{"status": "success", "contact_id": "12345", "message": fmt.Sprintf("Created contact for %s (%s)", firstName, email)}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -634,8 +727,14 @@ func (p *ZendeskProvider) ExchangeCode(ctx context.Context, code string) (*Token
 }
 func (p *ZendeskProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "create_ticket" {
-		subject := payload["subject"].(string)
-		desc := payload["description"].(string)
+		subject, err := getString(payload, "subject")
+		if err != nil {
+			return nil, err
+		}
+		desc, err := getString(payload, "description")
+		if err != nil {
+			return nil, err
+		}
 		return map[string]string{"status": "success", "ticket_id": "1234", "message": fmt.Sprintf("Created ticket: %s - %s", subject, desc)}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -661,8 +760,14 @@ func (p *IntercomProvider) ExchangeCode(ctx context.Context, code string) (*Toke
 }
 func (p *IntercomProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "create_user" {
-		email := payload["email"].(string)
-		name := payload["name"].(string)
+		email, err := getString(payload, "email")
+		if err != nil {
+			return nil, err
+		}
+		name, err := getString(payload, "name")
+		if err != nil {
+			return nil, err
+		}
 		return map[string]string{"status": "success", "user_id": "abc123", "message": fmt.Sprintf("Created user %s (%s)", name, email)}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -688,8 +793,11 @@ func (p *PipedriveProvider) ExchangeCode(ctx context.Context, code string) (*Tok
 }
 func (p *PipedriveProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "create_deal" {
-		title := payload["title"].(string)
-		value := payload["value"]
+		title, err := getString(payload, "title")
+		if err != nil {
+			return nil, err
+		}
+		value := payload["value"] // numeric — kept as interface{}
 		return map[string]interface{}{"status": "success", "deal_id": 123, "message": fmt.Sprintf("Created deal '%s' worth %v", title, value)}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -717,8 +825,14 @@ func (p *GitHubProvider) ExchangeCode(ctx context.Context, code string) (*Token,
 }
 func (p *GitHubProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "create_issue" {
-		repo := payload["repo"].(string)
-		title := payload["title"].(string)
+		repo, err := getString(payload, "repo")
+		if err != nil {
+			return nil, err
+		}
+		title, err := getString(payload, "title")
+		if err != nil {
+			return nil, err
+		}
 		return map[string]string{"status": "success", "issue_number": "42", "message": fmt.Sprintf("Created issue in %s: %s", repo, title)}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -744,8 +858,14 @@ func (p *GitLabProvider) ExchangeCode(ctx context.Context, code string) (*Token,
 }
 func (p *GitLabProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "create_issue" {
-		project := payload["project"].(string)
-		title := payload["title"].(string)
+		project, err := getString(payload, "project")
+		if err != nil {
+			return nil, err
+		}
+		title, err := getString(payload, "title")
+		if err != nil {
+			return nil, err
+		}
 		return map[string]string{"status": "success", "issue_iid": "123", "message": fmt.Sprintf("Created issue in %s: %s", project, title)}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -771,8 +891,14 @@ func (p *BitbucketProvider) ExchangeCode(ctx context.Context, code string) (*Tok
 }
 func (p *BitbucketProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "create_pull_request" {
-		repo := payload["repo"].(string)
-		title := payload["title"].(string)
+		repo, err := getString(payload, "repo")
+		if err != nil {
+			return nil, err
+		}
+		title, err := getString(payload, "title")
+		if err != nil {
+			return nil, err
+		}
 		return map[string]string{"status": "success", "pr_id": "99", "message": fmt.Sprintf("Created PR in %s: %s", repo, title)}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -800,7 +926,10 @@ func (p *DropboxProvider) ExchangeCode(ctx context.Context, code string) (*Token
 }
 func (p *DropboxProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "upload_file" {
-		path := payload["path"].(string)
+		path, err := getString(payload, "path")
+		if err != nil {
+			return nil, err
+		}
 		return map[string]string{"status": "success", "file_id": "id:abc123", "message": fmt.Sprintf("Uploaded file to %s", path)}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -826,7 +955,10 @@ func (p *GoogleDriveProvider) ExchangeCode(ctx context.Context, code string) (*T
 }
 func (p *GoogleDriveProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "create_file" {
-		name := payload["name"].(string)
+		name, err := getString(payload, "name")
+		if err != nil {
+			return nil, err
+		}
 		return map[string]string{"status": "success", "file_id": "1aBcDeFgHiJkLmN", "message": fmt.Sprintf("Created file '%s'", name)}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -852,7 +984,10 @@ func (p *OneDriveProvider) ExchangeCode(ctx context.Context, code string) (*Toke
 }
 func (p *OneDriveProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "upload_file" {
-		fileName := payload["file_name"].(string)
+		fileName, err := getString(payload, "file_name")
+		if err != nil {
+			return nil, err
+		}
 		return map[string]string{"status": "success", "file_id": "abc-123-def", "message": fmt.Sprintf("Uploaded file '%s'", fileName)}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -878,8 +1013,14 @@ func (p *BoxProvider) ExchangeCode(ctx context.Context, code string) (*Token, er
 }
 func (p *BoxProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "upload_file" {
-		folderID := payload["folder_id"].(string)
-		fileName := payload["file_name"].(string)
+		folderID, err := getString(payload, "folder_id")
+		if err != nil {
+			return nil, err
+		}
+		fileName, err := getString(payload, "file_name")
+		if err != nil {
+			return nil, err
+		}
 		return map[string]string{"status": "success", "file_id": "123456789", "message": fmt.Sprintf("Uploaded '%s' to folder %s", fileName, folderID)}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -907,8 +1048,11 @@ func (p *StripeProvider) ExchangeCode(ctx context.Context, code string) (*Token,
 }
 func (p *StripeProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "create_payment_intent" {
-		amount := payload["amount"]
-		currency := payload["currency"].(string)
+		amount := payload["amount"] // numeric — kept as interface{}
+		currency, err := getString(payload, "currency")
+		if err != nil {
+			return nil, err
+		}
 		return map[string]interface{}{"status": "success", "payment_intent_id": "pi_123abc", "amount": amount, "currency": currency}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -934,7 +1078,10 @@ func (p *ShopifyProvider) ExchangeCode(ctx context.Context, code string) (*Token
 }
 func (p *ShopifyProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "create_product" {
-		title := payload["title"].(string)
+		title, err := getString(payload, "title")
+		if err != nil {
+			return nil, err
+		}
 		return map[string]string{"status": "success", "product_id": "1234567890", "message": fmt.Sprintf("Created product '%s'", title)}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -1014,8 +1161,11 @@ func (p *AirtableProvider) ExchangeCode(ctx context.Context, code string) (*Toke
 }
 func (p *AirtableProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "create_record" {
-		table := payload["table"].(string)
-		fields := payload["fields"]
+		table, err := getString(payload, "table")
+		if err != nil {
+			return nil, err
+		}
+		fields := payload["fields"] // arbitrary object — kept as interface{}
 		return map[string]interface{}{"status": "success", "record_id": "recABC123", "message": fmt.Sprintf("Created record in table %s", table), "fields": fields}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -1041,8 +1191,11 @@ func (p *GoogleSheetsProvider) ExchangeCode(ctx context.Context, code string) (*
 }
 func (p *GoogleSheetsProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "append_row" {
-		spreadsheetID := payload["spreadsheet_id"].(string)
-		values := payload["values"]
+		spreadsheetID, err := getString(payload, "spreadsheet_id")
+		if err != nil {
+			return nil, err
+		}
+		values := payload["values"] // array — kept as interface{}
 		return map[string]interface{}{"status": "success", "spreadsheet_id": spreadsheetID, "message": "Row appended successfully", "values": values}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -1068,7 +1221,10 @@ func (p *TableauProvider) ExchangeCode(ctx context.Context, code string) (*Token
 }
 func (p *TableauProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "refresh_datasource" {
-		datasourceID := payload["datasource_id"].(string)
+		datasourceID, err := getString(payload, "datasource_id")
+		if err != nil {
+			return nil, err
+		}
 		return map[string]string{"status": "success", "datasource_id": datasourceID, "message": "Datasource refresh initiated"}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -1094,9 +1250,15 @@ func (p *MicrosoftExcelProvider) ExchangeCode(ctx context.Context, code string) 
 }
 func (p *MicrosoftExcelProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "update_cell" {
-		workbookID := payload["workbook_id"].(string)
-		cell := payload["cell"].(string)
-		value := payload["value"]
+		workbookID, err := getString(payload, "workbook_id")
+		if err != nil {
+			return nil, err
+		}
+		cell, err := getString(payload, "cell")
+		if err != nil {
+			return nil, err
+		}
+		value := payload["value"] // may be any scalar — kept as interface{}
 		return map[string]interface{}{"status": "success", "workbook_id": workbookID, "cell": cell, "value": value, "message": "Cell updated successfully"}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -1124,7 +1286,10 @@ func (p *TwitterProvider) ExchangeCode(ctx context.Context, code string) (*Token
 }
 func (p *TwitterProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "post_tweet" {
-		text := payload["text"].(string)
+		text, err := getString(payload, "text")
+		if err != nil {
+			return nil, err
+		}
 		return map[string]string{"status": "success", "tweet_id": "1234567890", "message": fmt.Sprintf("Posted tweet: %s", text)}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -1150,7 +1315,10 @@ func (p *LinkedInProvider) ExchangeCode(ctx context.Context, code string) (*Toke
 }
 func (p *LinkedInProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "share_post" {
-		text := payload["text"].(string)
+		text, err := getString(payload, "text")
+		if err != nil {
+			return nil, err
+		}
 		return map[string]string{"status": "success", "post_id": "urn:li:share:123", "message": fmt.Sprintf("Posted to LinkedIn: %s", text)}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -1176,7 +1344,10 @@ func (p *FacebookProvider) ExchangeCode(ctx context.Context, code string) (*Toke
 }
 func (p *FacebookProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "publish_post" {
-		message := payload["message"].(string)
+		message, err := getString(payload, "message")
+		if err != nil {
+			return nil, err
+		}
 		return map[string]string{"status": "success", "post_id": "123456789_987654321", "message": fmt.Sprintf("Published to Facebook: %s", message)}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)
@@ -1202,8 +1373,14 @@ func (p *InstagramProvider) ExchangeCode(ctx context.Context, code string) (*Tok
 }
 func (p *InstagramProvider) Execute(ctx context.Context, token *Token, action string, payload map[string]interface{}) (interface{}, error) {
 	if action == "publish_media" {
-		imgURL := payload["image_url"].(string)
-		caption := payload["caption"].(string)
+		imgURL, err := getString(payload, "image_url")
+		if err != nil {
+			return nil, err
+		}
+		caption, err := getString(payload, "caption")
+		if err != nil {
+			return nil, err
+		}
 		return map[string]string{"status": "success", "media_id": "12345_67890", "message": fmt.Sprintf("Published %s to Instagram with caption: %s", imgURL, caption)}, nil
 	}
 	return nil, fmt.Errorf("unknown action: %s", action)

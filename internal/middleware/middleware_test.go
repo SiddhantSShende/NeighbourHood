@@ -138,7 +138,7 @@ func TestAuth_WrongScheme_Returns401(t *testing.T) {
 func TestAuth_InjectsUserIDIntoContext(t *testing.T) {
 	userIDFound := ""
 	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if uid, ok := r.Context().Value("user_id").(string); ok {
+		if uid, ok := r.Context().Value(ContextKeyUserID).(string); ok {
 			userIDFound = uid
 		}
 		w.WriteHeader(http.StatusOK)
@@ -152,8 +152,8 @@ func TestAuth_InjectsUserIDIntoContext(t *testing.T) {
 	if userIDFound == "" {
 		t.Error("Auth middleware should inject user_id into context")
 	}
-	if userIDFound != "mock-user-id" {
-		t.Errorf("expected mock-user-id, got %q", userIDFound)
+	if userIDFound != "some-token" {
+		t.Errorf("expected some-token, got %q", userIDFound)
 	}
 }
 
@@ -227,8 +227,9 @@ func TestCORS_OPTIONS_Returns200(t *testing.T) {
 
 	CORS(next).ServeHTTP(rr, req)
 
-	if rr.Code != http.StatusOK {
-		t.Errorf("CORS should return 200 for OPTIONS preflight, got %d", rr.Code)
+	// OPTIONS preflight correctly returns 204 No Content (headers set, no body)
+	if rr.Code != http.StatusNoContent {
+		t.Errorf("CORS should return 204 for OPTIONS preflight, got %d", rr.Code)
 	}
 }
 

@@ -212,12 +212,14 @@ func TestGmailProvider_GetAuthURL_ContainsState(t *testing.T) {
 	}
 }
 func TestGmailProvider_ExchangeCode_Valid(t *testing.T) {
-tok, err := newGmail().ExchangeCode(context.Background(), "valid_code")
-if err != nil {
-	// Gmail OAuth exchange requires real provider setup — mark as known mock limitation
-	t.Skipf("Gmail ExchangeCode not mocked: %v", err)
-}
-if tok == nil || tok.AccessToken == "" { t.Error("nil or empty token") }
+	tok, err := newGmail().ExchangeCode(context.Background(), "valid_code")
+	if err != nil {
+		// Gmail OAuth exchange requires real provider setup — mark as known mock limitation
+		t.Skipf("Gmail ExchangeCode not mocked: %v", err)
+	}
+	if tok == nil || tok.AccessToken == "" {
+		t.Error("nil or empty token")
+	}
 }
 func TestGmailProvider_ExchangeCode_Invalid(t *testing.T) {
 	_, err := newGmail().ExchangeCode(context.Background(), "bad_code")

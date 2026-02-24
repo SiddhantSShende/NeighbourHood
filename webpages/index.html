@@ -3,9 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Connect your applications to 100+ SaaS platforms with a single, unified API. Open-source enterprise integration platform built for developers.">
+    <meta name="theme-color" content="#7C3AED">
     <title>NeighbourHood - Enterprise Integration Platform for Developers</title>
+    <link rel="icon" type="image/svg+xml" href="./static/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="./static/landing.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"></noscript>
+    <!-- Theme: load before body paint to prevent flash -->
+    <script src="./static/theme.js"></script>
 </head>
 <body>
     <!-- Navigation -->
@@ -25,11 +33,25 @@
                     </svg>
                     <span>NeighbourHood</span>
                 </div>
-                <div class="nav-links">
+                <!-- Theme toggle: always visible outside the hamburger menu -->
+                <button id="theme-toggle" class="theme-toggle theme-toggle-pill" aria-label="Switch to dark mode" title="Switch to dark mode">
+                    <span class="icon-sun">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    </span>
+                    <span class="icon-moon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    </span>
+                    <span class="toggle-label-dark">Dark</span>
+                    <span class="toggle-label-light">Light</span>
+                </button>
+                <button class="nav-hamburger" id="nav-hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="nav-links">
+                    <span></span><span></span><span></span>
+                </button>
+                <div class="nav-links" id="nav-links" role="navigation">
                     <a href="#features">Features</a>
                     <a href="#integrations">Integrations</a>
                     <a href="./developer-guide.html">Developer Guide</a>
-                    <a href="https://github.com/SiddhantSShende/NeighbourHood" target="_blank" class="contribute-link">
+                    <a href="https://github.com/SiddhantSShende/NeighbourHood" target="_blank" rel="noopener noreferrer" class="contribute-link">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
                         </svg>
@@ -41,6 +63,7 @@
         </div>
     </nav>
 
+    <main>
     <!-- Hero Section -->
     <section class="hero">
         <div class="container">
@@ -64,7 +87,7 @@
                             <path d="M5 12h14M12 5l7 7-7 7" stroke-width="2" stroke-linecap="round"/>
                         </svg>
                     </a>
-                    <a href="https://github.com/SiddhantSShende/NeighbourHood" class="btn-secondary btn-large" target="_blank">
+                    <a href="https://github.com/SiddhantSShende/NeighbourHood" class="btn-secondary btn-large" target="_blank" rel="noopener noreferrer">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
                         </svg>
@@ -218,11 +241,12 @@
                 <p>Join thousands of developers building the future of integrations</p>
                 <div class="cta-buttons">
                     <a href="./dashboard.html" class="btn-primary btn-large">Get Started Free</a>
-                    <a href="https://github.com/SiddhantSShende/NeighbourHood" class="btn-secondary btn-large" target="_blank">Contribute on GitHub</a>
+                    <a href="https://github.com/SiddhantSShende/NeighbourHood" class="btn-secondary btn-large" target="_blank" rel="noopener noreferrer">Contribute on GitHub</a>
                 </div>
             </div>
         </div>
     </section>
+    </main>
 
     <!-- Footer -->
     <footer class="footer">
@@ -260,5 +284,43 @@
             </div>
         </div>
     </footer>
+    <script>
+        (function () {
+            var btn = document.getElementById('nav-hamburger');
+            var links = document.getElementById('nav-links');
+
+            function openMenu() {
+                btn.classList.add('open');
+                links.classList.add('mobile-open');
+                btn.setAttribute('aria-expanded', 'true');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeMenu() {
+                btn.classList.remove('open');
+                links.classList.remove('mobile-open');
+                btn.setAttribute('aria-expanded', 'false');
+                document.body.style.overflow = '';
+            }
+
+            btn.addEventListener('click', function () {
+                if (links.classList.contains('mobile-open')) {
+                    closeMenu();
+                } else {
+                    openMenu();
+                }
+            });
+
+            // Close on nav link click
+            links.querySelectorAll('a').forEach(function (a) {
+                a.addEventListener('click', closeMenu);
+            });
+
+            // Close on resize to desktop
+            window.addEventListener('resize', function () {
+                if (window.innerWidth > 768) closeMenu();
+            });
+        }());
+    </script>
 </body>
 </html>

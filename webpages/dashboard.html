@@ -3,9 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="NeighbourHood Developer Dashboard — manage integrations, API keys, and connected services.">
+    <meta name="theme-color" content="#7C3AED">
     <title>NeighbourHood | Developer Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="./static/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="./static/dashboard.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Theme: load before body paint to prevent flash -->
+    <script src="./static/theme.js"></script>
 </head>
 <body>
     <header>
@@ -25,12 +32,25 @@
                     <span>NeighbourHood</span>
                 </a>
             </div>
-            <nav id="auth-nav">
-                <!-- Dynamically populated -->
-            </nav>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <button id="theme-toggle" class="theme-toggle" aria-label="Switch to dark mode" title="Switch to dark mode">
+                    <span class="icon-sun">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    </span>
+                    <span class="icon-moon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    </span>
+                    <span class="toggle-label-dark">Dark</span>
+                    <span class="toggle-label-light">Light</span>
+                </button>
+                <nav id="auth-nav">
+                    <!-- Dynamically populated -->
+                </nav>
+            </div>
         </div>
     </header>
 
+    <main id="app">
     <div class="container">
         <!-- Login View -->
         <section id="login-view" class="card" style="max-width: 480px; margin: 4rem auto;">
@@ -63,7 +83,7 @@
                 <label for="password">Password</label>
                 <input type="password" id="password" placeholder="••••••••" required>
                 
-                <button type="submit" style="width: 100%; margin-top: 0.5rem;">Sign In</button>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 0.5rem;">Sign In</button>
                 
                 <p style="text-align: center; margin-top: 1rem; color: var(--text-secondary); font-size: 0.875rem;">
                     Don't have an account? <a href="./index.html" style="color: var(--purple-700); text-decoration: none; font-weight: 600;">Back to home</a>
@@ -105,7 +125,7 @@
                         <div class="api-key-label">Production Key</div>
                         <div class="api-key-value">
                             <code id="api-key-display">Loading...</code>
-                            <button class="btn-outline btn-sm" onclick="copyAPIKey()">
+                            <button class="btn-outline btn-sm" onclick="copyToClipboard(document.getElementById('api-key-display').textContent.trim())">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2" stroke-width="2"/>
                                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke-width="2"/>
@@ -127,10 +147,12 @@
                         <h3 class="card-title">Available Integrations</h3>
                         <p class="text-secondary text-sm" id="integration-count">Loading platforms...</p>
                     </div>
-                    <input type="text" id="integration-search" placeholder="Search integrations..." oninput="searchIntegrations(this.value)" style="width: 300px; margin-bottom: 0;">
+                    <input type="text" id="integration-search" placeholder="Search integrations..."
+                           aria-label="Search integrations"
+                           oninput="searchIntegrations(this.value)" style="width: 300px; margin-bottom: 0;">
                 </div>
                 <!-- Category filter tabs -->
-                <div id="category-tabs" style="display:flex;flex-wrap:wrap;gap:0.5rem;padding:0.75rem 0 1rem 0;border-bottom:1px solid #E5E7EB;margin-bottom:1.25rem;"></div>
+                <div id="category-tabs" style="display:flex;flex-wrap:wrap;gap:0.5rem;padding:0.75rem 0 1rem 0;border-bottom:1px solid var(--border-color);margin-bottom:1.25rem;"></div>
                 <div class="grid" id="integrations-grid">
                     <!-- Dynamically populated -->
                 </div>
@@ -150,13 +172,15 @@
             </div>
         </section>
     </div>
+    </main>
 
     <!-- Integration Signup Modal -->
-    <div id="integration-modal" class="modal" style="display: none;">
+    <div id="integration-modal" class="modal" style="display: none;"
+         role="dialog" aria-modal="true" aria-labelledby="modal-title">
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="modal-title">Connect to Integration</h3>
-                <button class="close-btn" onclick="closeIntegrationModal()">×</button>
+                <button class="close-btn" onclick="closeIntegrationModal()" aria-label="Close">&times;</button>
             </div>
             <div id="modal-body">
                 <!-- Dynamically populated -->
@@ -165,11 +189,12 @@
     </div>
 
     <!-- Create API Key Modal -->
-    <div id="api-key-modal" class="modal" style="display: none;">
+    <div id="api-key-modal" class="modal" style="display: none;"
+         role="dialog" aria-modal="true" aria-labelledby="api-key-modal-title">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Create New API Key</h3>
-                <button class="close-btn" onclick="closeAPIKeyModal()">×</button>
+                <h3 id="api-key-modal-title">Create New API Key</h3>
+                <button class="close-btn" onclick="closeAPIKeyModal()" aria-label="Close">&times;</button>
             </div>
             <form id="create-api-key-form" onsubmit="createAPIKey(event)">
                 <label for="key-name">Key Name</label>

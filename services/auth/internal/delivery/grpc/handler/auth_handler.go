@@ -72,7 +72,11 @@ func (h *AuthHandler) Login(ctx context.Context, req *pb.LoginRequest) (*pb.Logi
 	}
 
 	// Get user profile
-	userID, _ := h.useCase.ValidateToken(ctx, accessToken)
+	userID, err := h.useCase.ValidateToken(ctx, accessToken)
+	if err != nil {
+		h.logger.Error("Failed to validate freshly-issued token", "error", err)
+		return nil, status.Error(codes.Internal, "Failed to validate token")
+	}
 	user, err := h.useCase.GetUserProfile(ctx, userID)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "Failed to get user profile")

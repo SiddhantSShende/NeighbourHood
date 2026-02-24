@@ -7,6 +7,17 @@ const API_BASE = window.location.origin;
 let currentWorkspace = null;
 let currentUser = null;
 
+// XSS-safe HTML escaping helper - O(n) string length
+function escapeHTML(str) {
+    if (str == null) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#x27;');
+}
+
 // Integration Catalog with Requirements
 const INTEGRATIONS_CATALOG = [
     {
@@ -108,13 +119,17 @@ window.loginWithGitHub = () => {
     window.location.href = `${API_BASE}/auth/github/login`;
 };
 
-// OAuth Callback Handling
-const urlParams = new URLSearchParams(window.location.search);
-const token = urlParams.get('token');
-if (token) {
-    localStorage.setItem('nh_token', token);
-    window.history.replaceState({}, document.title, '/');
-}
+// OAuth Callback Handling — runs before DOMContentLoaded to store token early
+(function handleOAuthCallback() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    if (token) {
+        localStorage.setItem('nh_token', token);
+        // Remove token from URL without losing current path
+        const cleanUrl = window.location.pathname + window.location.hash;
+        window.history.replaceState({}, document.title, cleanUrl);
+    }
+}());
 
 // Initialize Dashboard
 document.addEventListener('DOMContentLoaded', async () => {
@@ -196,7 +211,7 @@ async function loadWorkspaces() {
         }
         
         selector.innerHTML = workspaces.map(ws => 
-            `<option value="${ws.id}">${ws.name}</option>`
+            `<option value="${escapeHTML(ws.id)}">${escapeHTML(ws.name)}</option>`
         ).join('');
         
         currentWorkspace = workspaces[0];
@@ -263,10 +278,10 @@ function displayAPIKeys(keys) {
     
     container.innerHTML = keys.map(key => `
         <div class="api-key-box">
-            <div class="api-key-label">${key.name}</div>
+            <div class="api-key-label">${escapeHTML(key.name)}</div>
             <div class="api-key-value">
-                <code>${key.key_prefix}••••••••••••••••</code>
-                <button class="btn-outline btn-sm" onclick="revokeAPIKey('${key.id}')">Revoke</button>
+                <code>${escapeHTML(key.key_prefix)}••••••••••••••••</code>
+                <button class="btn-outline btn-sm" data-key-id="${escapeHTML(key.id)}">Revoke</button>
             </div>
             <div class="flex justify-between items-center" style="margin-top: 0.75rem;">
                 <span class="text-sm text-secondary">
@@ -278,6 +293,11 @@ function displayAPIKeys(keys) {
             </div>
         </div>
     `).join('');
+
+    // Bind revoke buttons safely — avoid inline onclick with server data
+    container.querySelectorAll('[data-key-id]').forEach(btn => {
+        btn.addEventListener('click', () => revokeAPIKey(btn.dataset.keyId));
+    });
 }
 
 // Load and Display Available Integrations - O(n)
@@ -433,19 +453,24 @@ function displayActiveIntegrations(integrations) {
                 <div class="integration-info">
                     <div class="integration-icon">${catalog?.icon || '🔗'}</div>
                     <div class="integration-details">
-                        <h3>${catalog?.name || int.integration_type}</h3>
+                        <h3>${escapeHTML(catalog?.name || int.integration_type)}</h3>
                         <p class="text-sm">Connected ${new Date(int.connected_at).toLocaleDateString()}</p>
                     </div>
                 </div>
                 <div class="integration-actions">
                     <span class="status-badge status-connected">Connected</span>
-                    <button class="btn-outline btn-sm" onclick="disconnectIntegration('${int.id}')">
+                    <button class="btn-outline btn-sm" data-integration-id="${escapeHTML(int.id)}">
                         Disconnect
                     </button>
                 </div>
             </div>
         `;
     }).join('');
+
+    // Bind disconnect buttons safely
+    container.querySelectorAll('[data-integration-id]').forEach(btn => {
+        btn.addEventListener('click', () => disconnectIntegration(btn.dataset.integrationId));
+    });
 }
 
 // API Key Management
@@ -481,11 +506,29 @@ window.createAPIKey = async (event) => {
             })
         });
         
-        // Show the generated key (only shown once!)
-        alert(`API Key Created!\n\n${res.api_key}\n\nSave this key securely. You won't be able to see it again!`);
-        
-        closeAPIKeyModal();
-        await loadWorkspaceData(currentWorkspace.id);
+        // Show the generated key inline — only shown once, never via alert
+        const form = document.getElementById('create-api-key-form');
+        form.innerHTML = `
+            <div style="text-align:center;padding:1rem 0;">
+                <p style="font-weight:700;font-size:1.0625rem;margin-bottom:0.75rem;color:var(--text-primary);">API Key Created!</p>
+                <p style="font-size:0.875rem;color:var(--text-secondary);margin-bottom:1rem;">
+                    Copy and save this key now — it won't be shown again.
+                </p>
+                <div style="display:flex;gap:0.5rem;align-items:center;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:0.5rem;padding:0.75rem 1rem;margin-bottom:1.25rem;">
+                    <code id="new-api-key-display" style="flex:1;word-break:break-all;font-size:0.8125rem;">${escapeHTML(res.api_key)}</code>
+                    <button type="button" id="copy-new-key-btn" class="btn-outline btn-sm" style="flex-shrink:0;">Copy</button>
+                </div>
+                <button type="button" class="btn-primary" onclick="closeAPIKeyModal();loadWorkspaceData(currentWorkspace.id);">Done</button>
+            </div>
+        `;
+        document.getElementById('copy-new-key-btn').addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(res.api_key);
+                document.getElementById('copy-new-key-btn').textContent = 'Copied!';
+            } catch {
+                document.getElementById('copy-new-key-btn').textContent = 'Failed';
+            }
+        });
     } catch (err) {
         alert('Failed to create API key: ' + err.message);
     }
@@ -499,16 +542,24 @@ window.revokeAPIKey = async (keyId) => {
     try {
         await apiCall(`/api/api-keys/${keyId}/revoke`, { method: 'POST' });
         await loadWorkspaceData(currentWorkspace.id);
-        alert('API key revoked successfully');
     } catch (err) {
         alert('Failed to revoke API key: ' + err.message);
     }
 };
 
-window.copyAPIKey = () => {
+window.copyAPIKey = async () => {
     const keyElement = document.getElementById('api-key-display');
-    navigator.clipboard.writeText(keyElement.textContent);
-    alert('API key copied to clipboard!');
+    const btn = document.querySelector('[onclick="copyAPIKey()"]');
+    try {
+        await navigator.clipboard.writeText(keyElement.textContent.trim());
+        if (btn) { const orig = btn.textContent; btn.textContent = 'Copied!'; setTimeout(() => { btn.textContent = orig; }, 2000); }
+    } catch {
+        // Clipboard API unavailable — select the text as fallback
+        const range = document.createRange();
+        range.selectNodeContents(keyElement);
+        window.getSelection()?.removeAllRanges();
+        window.getSelection()?.addRange(range);
+    }
 };
 
 // Disconnect Integration
@@ -520,7 +571,6 @@ window.disconnectIntegration = async (integrationId) => {
     try {
         await apiCall(`/api/integrations/${integrationId}`, { method: 'DELETE' });
         await loadWorkspaceData(currentWorkspace.id);
-        alert('Integration disconnected successfully');
     } catch (err) {
         alert('Failed to disconnect integration: ' + err.message);
     }

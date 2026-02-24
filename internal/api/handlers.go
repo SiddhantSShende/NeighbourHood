@@ -4,13 +4,19 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"sort"
 
 	"neighbourhood/internal/consent"
 	"neighbourhood/internal/integrations"
+	"neighbourhood/internal/middleware"
 	"neighbourhood/internal/workflow"
 
 	"github.com/google/uuid"
 )
+
+// maxRequestBodySize is the maximum number of bytes accepted from an HTTP
+// request body. Requests larger than this are rejected with 413.
+const maxRequestBodySize = 1 << 20 // 1 MiB
 
 // Handler manages API routes and dependencies
 type Handler struct {
@@ -31,6 +37,7 @@ func (h *Handler) GetIntegrationAuthURL(w http.ResponseWriter, r *http.Request) 
 		State    string `json:"state"`
 	}
 
+	r.Body = http.MaxBytesReader(w, r.Body, maxRequestBodySize)
 	var req request
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		respondError(w, "invalid request body", http.StatusBadRequest)
@@ -61,6 +68,7 @@ func (h *Handler) ExecuteIntegrationAction(w http.ResponseWriter, r *http.Reques
 		Payload  map[string]interface{} `json:"payload"`
 	}
 
+	r.Body = http.MaxBytesReader(w, r.Body, maxRequestBodySize)
 	var req request
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		respondError(w, "invalid request body", http.StatusBadRequest)
@@ -73,8 +81,9 @@ func (h *Handler) ExecuteIntegrationAction(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	// Check consent (mock user ID for now)
-	userID := uuid.MustParse("00000000-0000-0000-0000-000000000001") // TODO: Get from context
+	// Extract authenticated user ID from context (set by Auth middleware).
+	// Falls back to a sentinel UUID in dev/demo mode when auth is bypassed.
+	userID := extractUserID(r)
 	if err := h.consentManager.ValidateConsent(r.Context(), userID, req.Provider); err != nil {
 		respondError(w, "consent not granted: "+err.Error(), http.StatusForbidden)
 		return
@@ -103,6 +112,7 @@ func (h *Handler) ExecuteWorkflow(w http.ResponseWriter, r *http.Request) {
 		Tokens   map[string]integrations.Token `json:"tokens"`
 	}
 
+	r.Body = http.MaxBytesReader(w, r.Body, maxRequestBodySize)
 	var req request
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		respondError(w, "invalid request body", http.StatusBadRequest)
@@ -115,8 +125,9 @@ func (h *Handler) ExecuteWorkflow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check consent for all providers in the workflow
-	userID := uuid.MustParse("00000000-0000-0000-0000-000000000001") // TODO: Get from context
+	// Extract authenticated user ID from context (set by Auth middleware).
+	// Falls back to a sentinel UUID in dev/demo mode when auth is bypassed.
+	userID := extractUserID(r)
 	for _, step := range req.Workflow.Steps {
 		if err := h.consentManager.ValidateConsent(r.Context(), userID, string(step.Provider)); err != nil {
 			respondError(w, "consent not granted for "+string(step.Provider)+": "+err.Error(), http.StatusForbidden)
@@ -142,15 +153,13 @@ func (h *Handler) ExecuteWorkflow(w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, map[string]interface{}{"results": results}, http.StatusOK)
 }
 
-// ListIntegrations returns all available integrations
+// ListIntegrations returns all available integrations, sorted by type for
+// deterministic output regardless of map iteration order.
 func (h *Handler) ListIntegrations(w http.ResponseWriter, r *http.Request) {
-	integrationsList := []map[string]interface{}{}
+	integrationsList := make([]map[string]interface{}, 0, len(integrations.Providers))
 
-	// Dynamically list all registered providers
 	for providerType := range integrations.Providers {
-		// Get category and description based on provider type
 		category, description := getProviderInfo(string(providerType))
-
 		integrationsList = append(integrationsList, map[string]interface{}{
 			"type":        string(providerType),
 			"name":        formatProviderName(string(providerType)),
@@ -158,6 +167,12 @@ func (h *Handler) ListIntegrations(w http.ResponseWriter, r *http.Request) {
 			"category":    category,
 		})
 	}
+
+	sort.Slice(integrationsList, func(i, j int) bool {
+		iType, _ := integrationsList[i]["type"].(string)
+		jType, _ := integrationsList[j]["type"].(string)
+		return iType < jType
+	})
 
 	respondJSON(w, map[string]interface{}{
 		"integrations": integrationsList,
@@ -254,6 +269,20 @@ func getProviderInfo(providerType string) (string, string) {
 		return data.category, data.description
 	}
 	return "Other", "Integration provider"
+}
+
+// extractUserID reads the authenticated user's ID from the request context,
+// populated by middleware.Auth. If the token has not been validated yet (e.g.
+// running without auth in development), it returns a well-known sentinel UUID
+// so the service remains functional without panicking.
+func extractUserID(r *http.Request) uuid.UUID {
+	if raw, ok := r.Context().Value(middleware.ContextKeyUserID).(string); ok && raw != "" {
+		if id, err := uuid.Parse(raw); err == nil {
+			return id
+		}
+	}
+	// Sentinel: used in dev/demo mode when the auth middleware is bypassed.
+	return uuid.MustParse("00000000-0000-0000-0000-000000000001")
 }
 
 // Helper functions

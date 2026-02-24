@@ -283,7 +283,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         dashboardView.style.display = 'block';
         
         authNav.innerHTML = `
-            <span style="margin-right: 1rem; color: var(--text-secondary);">${currentUser.email}</span>
+            <span style="margin-right: 1rem; color: var(--text-secondary);">${escHtml(currentUser.email)}</span>
             <button class="btn-secondary btn-sm" onclick="logout()">Sign Out</button>
         `;
 
@@ -311,7 +311,7 @@ function showDemoBanner() {
     `;
     banner.innerHTML = `
         <strong>Demo Mode:</strong> All data stored locally in your browser. 
-        <a href="https://github.com/SiddhantSShende/NeighbourHood" target="_blank" 
+        <a href="https://github.com/SiddhantSShende/NeighbourHood" target="_blank" rel="noopener noreferrer"
            style="color: white; text-decoration: underline; margin-left: 0.5rem;">
            Run backend locally for full functionality
         </a>
@@ -396,9 +396,9 @@ async function loadIntegrations() {
                         <button class="btn-sm btn-secondary" onclick="disconnectIntegration('${integration.type}')">
                             Disconnect
                         </button>
-                        <span class="text-success">Connected</span>
+                        <span class="text-success">✓ Connected</span>
                     ` : `
-                        <button class="btn-sm" onclick="connectIntegration('${integration.type}')">
+                        <button class="btn-sm" onclick="showIntegrationModal('${integration.type}')">
                             Connect
                         </button>
                     `}
@@ -488,7 +488,7 @@ async function loadAPIKeys() {
         <div class="api-key-item" style="padding: 1rem; border: 1px solid var(--border-color); border-radius: 0.5rem; margin-bottom: 1rem;">
             <div class="flex justify-between items-center">
                 <div>
-                    <h4 style="margin-bottom: 0.25rem;">${key.name}</h4>
+                    <h4 style="margin-bottom: 0.25rem;">${escHtml(key.name)}</h4>
                     <code style="font-size: 0.875rem; color: var(--text-secondary);">${key.key}</code>
                     <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-top: 0.5rem;">
                         Created: ${new Date(key.created_at).toLocaleDateString()}
@@ -542,21 +542,87 @@ window.closeAPIKeyModal = () => {
     if (modal) modal.style.display = 'none';
 };
 
+/** Close the integration connect/scope modal. */
+window.closeIntegrationModal = () => {
+    const modal = document.getElementById('integration-modal');
+    if (modal) modal.style.display = 'none';
+};
+
+/**
+ * Show the integration modal with required OAuth scopes before connecting.
+ * Uses event-listener-based confirm button to avoid onclick-attribute injection.
+ */
+window.showIntegrationModal = (type) => {
+    const integration = INTEGRATIONS_CATALOG.find(i => i.type === type);
+    if (!integration) return;
+
+    const modal   = document.getElementById('integration-modal');
+    const titleEl = document.getElementById('modal-title');
+    const body    = document.getElementById('modal-body');
+
+    // Fallback: connect directly when modal markup is absent (e.g. test context)
+    if (!modal || !titleEl || !body) {
+        connectIntegration(type);
+        return;
+    }
+
+    const integrations = JSON.parse(localStorage.getItem('nh_demo_integrations') || '[]');
+    const alreadyConnected = integrations.some(i => i.type === type);
+
+    titleEl.textContent = 'Connect to ' + integration.name;
+    body.innerHTML = `
+        <p style="margin-bottom:1rem;color:var(--text-secondary);">${escHtml(integration.description)}</p>
+        <div style="margin-bottom:1.5rem;">
+            <p style="font-weight:600;font-size:0.875rem;margin-bottom:0.5rem;">Required permissions:</p>
+            <ul style="margin-left:1.25rem;line-height:1.8;font-size:0.875rem;">
+                ${integration.requiredScopes.map(s => '<li><code>' + escHtml(s) + '</code></li>').join('')}
+            </ul>
+        </div>
+        ${alreadyConnected
+            ? '<p style="color:var(--text-success,#10B981);font-weight:600;">✓ Already connected</p>'
+            : `<div style="display:flex;gap:0.75rem;">
+                   <button class="btn-sm" style="flex:1;" id="modal-confirm-btn">✓ Authorize &amp; Connect</button>
+                   <button class="btn-sm btn-secondary" onclick="closeIntegrationModal()">Cancel</button>
+               </div>`
+        }
+    `;
+
+    if (!alreadyConnected) {
+        // Use event listener instead of inline onclick to avoid attribute injection
+        document.getElementById('modal-confirm-btn').addEventListener('click', () => {
+            connectIntegration(type);
+            closeIntegrationModal();
+        }, { once: true });
+    }
+
+    modal.style.display = 'flex';
+};
+
+// Close modals when clicking the backdrop outside the modal-content box
+document.addEventListener('click', (e) => {
+    const integrationModal = document.getElementById('integration-modal');
+    const apiKeyModal = document.getElementById('api-key-modal');
+    if (e.target === integrationModal) closeIntegrationModal();
+    if (e.target === apiKeyModal) closeAPIKeyModal();
+});
+
 window.createAPIKey = (event) => {
     event.preventDefault();
     
-    const name = document.getElementById('key-name').value;
+    const name = document.getElementById('key-name').value.trim();
     if (!name) {
         showError('Please provide a key name');
         return;
     }
-    
+
+    const rateLimit = parseInt(document.getElementById('key-rate-limit').value, 10) || 1000;
     const keys = JSON.parse(localStorage.getItem('nh_demo_api_keys') || '[]');
     const newKey = {
         id: 'key-' + Date.now(),
         name: name,
         key: 'nh_demo_' + generateRandomKey(),
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        rate_limit: rateLimit
     };
     
     keys.push(newKey);
@@ -592,6 +658,16 @@ function generateRandomKey() {
     return Array.from({length: 32}, () => 
         Math.random().toString(36)[2] || '0'
     ).join('');
+}
+
+/** Escape HTML special characters to prevent XSS when inserting user data into innerHTML. */
+function escHtml(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
 window.copyToClipboard = (text) => {

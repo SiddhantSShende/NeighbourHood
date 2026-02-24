@@ -1,9 +1,14 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"neighbourhood/internal/api"
 	"neighbourhood/internal/auth"
@@ -16,7 +21,10 @@ import (
 
 func main() {
 	// 0. Load Configuration
-	cfg := config.Load()
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("Configuration error: %v", err)
+	}
 	log.Printf("Starting NeighbourHood Integration Platform in %s mode", cfg.Server.Env)
 
 	// 1. Set Working Directory to Project Root
@@ -25,13 +33,13 @@ func main() {
 	}
 
 	// Verify critical file paths exist
-	if _, err := os.Stat("./web/static"); os.IsNotExist(err) {
+	if _, err := os.Stat("./webpages/static"); os.IsNotExist(err) {
 		wd, _ := os.Getwd()
-		log.Fatalf("CRITICAL: ./web/static not found in %s. Check project structure.", wd)
+		log.Fatalf("CRITICAL: ./webpages/static not found in %s. Check project structure.", wd)
 	}
-	if _, err := os.Stat("./web/templates/index.html"); os.IsNotExist(err) {
+	if _, err := os.Stat("./webpages/index.html"); os.IsNotExist(err) {
 		wd, _ := os.Getwd()
-		log.Fatalf("CRITICAL: ./web/templates/index.html not found in %s. Check project structure.", wd)
+		log.Fatalf("CRITICAL: ./webpages/index.html not found in %s. Check project structure.", wd)
 	}
 
 	// 2. Initialize Database
@@ -61,12 +69,13 @@ func main() {
 
 	// Health Check
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
+		fmt.Fprint(w, `{"status":"ok"}`)
 	})
 
 	// Static Files
-	fs := http.FileServer(http.Dir("./web/static"))
+	fs := http.FileServer(http.Dir("./webpages/static"))
 	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	// Home/Dashboard
@@ -75,7 +84,7 @@ func main() {
 			http.NotFound(w, r)
 			return
 		}
-		http.ServeFile(w, r, "./web/templates/index.html")
+		http.ServeFile(w, r, "./webpages/index.html")
 	})
 
 	// Auth Routes
@@ -96,16 +105,47 @@ func main() {
 	// MCP Routes
 	mux.HandleFunc("/mcp", mcp.Handler)
 
-	// 6. Apply Global Middleware
-	handler := middleware.Chain(mux, middleware.Logger, middleware.CORS)
+	// 7. Apply Global Middleware (security headers → logging → CORS)
+	handler := middleware.Chain(mux,
+		middleware.SecurityHeaders,
+		middleware.Logger,
+		middleware.CORS,
+	)
 
-	// 7. Start Server
-	log.Printf("Server starting on port %s", cfg.Server.Port)
-	log.Printf("Visit http://localhost:%s to access the developer portal", cfg.Server.Port)
-
-	if err := http.ListenAndServe(":"+cfg.Server.Port, handler); err != nil {
-		log.Fatalf("Server failed to start: %v", err)
+	// 8. Configure HTTP server with explicit timeouts and start with graceful shutdown
+	srv := &http.Server{
+		Addr:         ":" + cfg.Server.Port,
+		Handler:      handler,
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 15 * time.Second,
+		IdleTimeout:  60 * time.Second,
 	}
+
+	serverErr := make(chan error, 1)
+	go func() {
+		log.Printf("Server starting on port %s", cfg.Server.Port)
+		log.Printf("Visit http://localhost:%s to access the developer portal", cfg.Server.Port)
+		serverErr <- srv.ListenAndServe()
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+	select {
+	case err := <-serverErr:
+		if err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Server failed: %v", err)
+		}
+	case <-quit:
+		log.Println("Shutdown signal received, draining connections...")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatalf("Graceful shutdown failed: %v", err)
+	}
+	log.Println("Server stopped cleanly")
 }
 
 // registerProviders registers all integration providers

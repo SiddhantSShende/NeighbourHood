@@ -112,7 +112,9 @@ func (p *SlackProvider) sendMessage(ctx context.Context, token *Token, params ma
 	defer resp.Body.Close()
 
 	var result map[string]interface{}
-	json.NewDecoder(resp.Body).Decode(&result)
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("failed to decode Slack response: %w", err)
+	}
 	return result, nil
 }
 
@@ -132,7 +134,9 @@ func (p *SlackProvider) listChannels(ctx context.Context, token *Token) (interfa
 	defer resp.Body.Close()
 
 	var result map[string]interface{}
-	json.NewDecoder(resp.Body).Decode(&result)
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("failed to decode Slack response: %w", err)
+	}
 	return result, nil
 }
 
@@ -226,7 +230,9 @@ func (p *GmailProvider) listMessages(ctx context.Context, token *Token) (interfa
 	defer resp.Body.Close()
 
 	var result map[string]interface{}
-	json.NewDecoder(resp.Body).Decode(&result)
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("failed to decode Gmail response: %w", err)
+	}
 	return result, nil
 }
 
@@ -404,7 +410,9 @@ func (p *GitHubProvider) createIssue(ctx context.Context, token *Token, params m
 	defer resp.Body.Close()
 
 	var result map[string]interface{}
-	json.NewDecoder(resp.Body).Decode(&result)
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("failed to decode GitHub response: %w", err)
+	}
 	return result, nil
 }
 
@@ -424,7 +432,9 @@ func (p *GitHubProvider) listRepos(ctx context.Context, token *Token) (interface
 	defer resp.Body.Close()
 
 	var result []map[string]interface{}
-	json.NewDecoder(resp.Body).Decode(&result)
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("failed to decode GitHub response: %w", err)
+	}
 	return result, nil
 }
 

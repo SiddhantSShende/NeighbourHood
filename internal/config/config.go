@@ -1,9 +1,13 @@
 package config
 
 import (
+	"errors"
+	"log"
 	"os"
 	"strconv"
 )
+
+const defaultJWTSecret = "dev-secret-change-in-production"
 
 // Config holds application configuration
 type Config struct {
@@ -111,15 +115,16 @@ type ProviderConfig struct {
 	Enabled      bool
 }
 
-// Load loads configuration from environment variables
-func Load() *Config {
-	return &Config{
+// Load loads configuration from environment variables.
+// It returns an error when running in production with insecure defaults.
+func Load() (*Config, error) {
+	cfg := &Config{
 		Server: ServerConfig{
 			Port: getEnv("PORT", "8080"),
 			Env:  getEnv("ENV", "development"),
 		},
 		Auth: AuthConfig{
-			JWTSecret: getEnv("JWT_SECRET", "dev-secret-change-in-production"),
+			JWTSecret: getEnv("JWT_SECRET", defaultJWTSecret),
 			GoogleOAuth: OAuthConfig{
 				ClientID:     getEnv("GOOGLE_CLIENT_ID", ""),
 				ClientSecret: getEnv("GOOGLE_CLIENT_SECRET", ""),
@@ -199,6 +204,24 @@ func Load() *Config {
 			Instagram: loadProvider("INSTAGRAM"),
 		},
 	}
+
+	if err := cfg.validate(); err != nil {
+		return nil, err
+	}
+
+	return cfg, nil
+}
+
+// validate checks that the configuration is safe to use.
+// It returns an error for configurations that must not reach production.
+func (c *Config) validate() error {
+	if c.Server.Env == "production" && c.Auth.JWTSecret == defaultJWTSecret {
+		return errors.New("JWT_SECRET must be set to a strong secret in production; refusing to start with the default value")
+	}
+	if c.Auth.JWTSecret == defaultJWTSecret {
+		log.Println("WARNING: JWT_SECRET is set to the default development value. Set JWT_SECRET in your environment before deploying.")
+	}
+	return nil
 }
 
 // loadProvider loads a provider configuration from environment variables

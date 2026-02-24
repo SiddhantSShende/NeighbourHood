@@ -64,7 +64,9 @@ func (uc *RBACUseCase) CreateWorkspace(ctx context.Context, ownerID, name, descr
 	if err := uc.rbacRepo.CreateUserRole(ownerRole); err != nil {
 		uc.logger.Error("Failed to assign owner role", "error", err, "workspace_id", workspaceID)
 		// Rollback workspace creation
-		uc.rbacRepo.DeleteWorkspace(workspaceID)
+		if delErr := uc.rbacRepo.DeleteWorkspace(workspaceID); delErr != nil {
+			uc.logger.Error("Failed to rollback workspace creation", "error", delErr, "workspace_id", workspaceID)
+		}
 		return nil, fmt.Errorf("failed to assign owner role: %w", err)
 	}
 
@@ -172,6 +174,11 @@ func (uc *RBACUseCase) AssignRole(ctx context.Context, adminUserID, targetUserID
 
 	// Check if user role already exists
 	existingRole, err := uc.rbacRepo.GetUserRole(targetUserID, workspaceID)
+	if err != nil {
+		uc.logger.Error("Failed to check existing user role", "error", err, "user_id", targetUserID, "workspace_id", workspaceID)
+		// Treat as not found and proceed to create
+		existingRole = nil
+	}
 
 	if existingRole != nil {
 		// Update existing role - O(1)
