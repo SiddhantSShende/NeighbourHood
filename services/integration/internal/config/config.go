@@ -3,10 +3,13 @@ package config
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"time"
 
 	"github.com/spf13/viper"
 )
+
+var envVarPattern = regexp.MustCompile(`\$\{([^}:]+)(?::([^}]*))?\}`)
 
 type Config struct {
 	Server    ServerConfig
@@ -126,19 +129,32 @@ func expandMap(m map[string]interface{}) {
 	for k, v := range m {
 		switch val := v.(type) {
 		case string:
-			m[k] = os.ExpandEnv(val)
+			m[k] = expandEnvWithDefault(val)
 		case map[string]interface{}:
 			expandMap(val)
 		case []interface{}:
 			for i, item := range val {
 				if str, ok := item.(string); ok {
-					val[i] = os.ExpandEnv(str)
+					val[i] = expandEnvWithDefault(str)
 				} else if mapItem, ok := item.(map[string]interface{}); ok {
 					expandMap(mapItem)
 				}
 			}
 		}
 	}
+}
+
+// expandEnvWithDefault expands ${VAR:default} and ${VAR} and $VAR patterns.
+func expandEnvWithDefault(s string) string {
+	return envVarPattern.ReplaceAllStringFunc(s, func(match string) string {
+		groups := envVarPattern.FindStringSubmatch(match)
+		varName := groups[1]
+		defaultVal := groups[2]
+		if val, ok := os.LookupEnv(varName); ok {
+			return val
+		}
+		return defaultVal
+	})
 }
 
 func validate(cfg *Config) error {
@@ -156,6 +172,23 @@ func validate(cfg *Config) error {
 	if cfg.Server.ShutdownTimeout == 0 {
 		cfg.Server.ShutdownTimeout = 30 * time.Second
 	}
+
+	if cfg.Server.GRPC.MaxRecvMsgSize == 0 {
+		cfg.Server.GRPC.MaxRecvMsgSize = 10 * 1024 * 1024
+	}
+
+	if cfg.Server.GRPC.MaxSendMsgSize == 0 {
+		cfg.Server.GRPC.MaxSendMsgSize = 10 * 1024 * 1024
+	}
+
+	if cfg.Server.GRPC.Keepalive.Time == 0 {
+		cfg.Server.GRPC.Keepalive.Time = 30 * time.Second
+	}
+
+	if cfg.Server.GRPC.Keepalive.Timeout == 0 {
+		cfg.Server.GRPC.Keepalive.Timeout = 10 * time.Second
+	}
+
 	if cfg.Retry.MaxAttempts == 0 {
 		cfg.Retry.MaxAttempts = 3
 	}
